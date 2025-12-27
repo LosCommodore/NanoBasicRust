@@ -1,4 +1,7 @@
 use regex::Regex;
+use std::error::Error;
+
+type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 #[allow(unused)]
 #[derive(Debug)]
@@ -64,14 +67,19 @@ fn find_token(text: &str) -> Token {
 }
 */
 
-fn find_rem(line: &str) -> Option<Token> {
+fn find_rem(line: &str) -> Result<Option<Token>> {
     let reg_rem = Regex::new(r"rem.*").unwrap();
     let m = reg_rem.find(line);
 
-    let Some(mm) = m else {return None };
+    let Some(mm) = m else {return Ok(None) };
 
     println!("{:?}",mm);
-    Some(Token{kind:TokenType::Comment,  line_num:1, col_start:2, col_end:3})
+    Ok(Some(
+        Token{
+            kind:TokenType::Comment, 
+             line_num:1,
+              col_start:2,
+               col_end:3}))
 }
 
 fn main() {
