@@ -28,9 +28,9 @@ enum TokenType {
     Divide,
     OpenParen,
     CloseParen,
-    Variable,
-    Number,
-    String,
+    Variable(String),
+    Number(usize),
+    String(String),
 }
 
 #[allow(unused)]
@@ -42,45 +42,67 @@ struct Token{
     col_end: usize,
 }
 
+struct Case {
+    regex: Regex,
+    capture: bool,
+    ctor: fn(&str) -> TokenType,
+}
 
-/*
+lazy_static::lazy_static! {
+    static ref CASES: [Case; 2] = [
+        Case {
+            regex: Regex::new(r"rem.*").unwrap(),
+            capture: false,
+            ctor: |_v: &str|TokenType::Comment,
+        },
+        Case {
+            regex: Regex::new(r"[A-Za-z_]+").unwrap(),
+            capture: true,
+            ctor: |v: &str|TokenType::Variable(v.to_string()),
+        },
+    ];
+}
 
-fn find_token(text: &str) -> Token {
-    fn rem_token(txt: &str) -> Token {
-        Token(kind=rem_token(txt))
 
+fn find_rem(line: &str) -> Result<Token> {
+    fn std_token(case: &Case, text: &str) -> Option<Token> {
+        let m = case.regex.find(text)?;
+        Some(Token{
+            kind: (case.ctor)(""),
+            line_num: 0,
+            col_start: m.start(),
+            col_end: m.end()
+        })
     }
 
-    fn hallo(x: &str) -> &str  { x}
+    fn capture_token(case: &Case, text: &str) -> Option<Token> {
+            let captures= case.regex.captures(text)?;
+            let col_start = captures.get(0)?.start();
+            let col_end = captures.get(0)?.end();
+            
+            let cap1 = captures.get(1)?;
+            let cap1_str = cap1.as_str();
+            Some(Token{
+                kind: (case.ctor)(cap1_str),
+                line_num: 0,
+                col_start,
+                col_end,  
+            })
+            }
 
-    let reg_rem = Regex::new(r"rem.*").unwrap();
-
-    let ac = vec![("dbc", hallo)];
-    let ac2: Vec<(Regex, fn(&str) -> Token)>;
-    ac2.push((reg_rem), rem_token )
-
-
-    match text {
-        _ if reg_rem.is_match(text) => Token::Comment,
-        _ => Token::Divide
-    }
+    let token = CASES
+        .iter()
+        .find_map(|case| {
+            match case.capture {
+                true  => capture_token(case, line),
+                false => std_token(case, line),
+            }
+        });
+    
+    let token = token.expect("Syntax Error");
+    Ok(token)
 }
-*/
 
-fn find_rem(line: &str) -> Result<Option<Token>> {
-    let reg_rem = Regex::new(r"rem.*").unwrap();
-    let m = reg_rem.find(line);
-
-    let Some(mm) = m else {return Ok(None) };
-
-    println!("{:?}",mm);
-    Ok(Some(
-        Token{
-            kind:TokenType::Comment, 
-             line_num:1,
-              col_start:2,
-               col_end:3}))
-}
 
 fn main() {
     println!("Hallo welt");
