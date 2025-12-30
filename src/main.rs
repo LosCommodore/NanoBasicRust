@@ -76,14 +76,14 @@ fn match_token(text: &str) -> Result<Token> {
             kind: (case.ctor)(""),
             line_num: 0,
             col_start: m.start(),
-            col_end: m.end()
+            col_end: m.end() -1
         })
     }
 
     fn capture_token(case: &Case, text: &str) -> Option<Token> {
             let captures= case.regex.captures(text)?;
             let col_start = captures.get(0)?.start();
-            let col_end = captures.get(0)?.end();
+            let col_end = captures.get(0)?.end() -1;
             
             let cap1 = captures.get(1)?;
             let cap1_str = cap1.as_str();
@@ -108,6 +108,24 @@ fn match_token(text: &str) -> Result<Token> {
     token
 }
 
+fn match_line(line: &str) -> Result<Vec<Token>> {
+    let mut parse_line = line;
+    let mut tokens = Vec::<Token>::new();
+    let mut col = 0;
+    while parse_line.len() > col {
+        parse_line = &line[col..];
+
+        let mut token = match_token(line)?;
+        let offset = token.col_end - token.col_start+1;
+        token.col_start +=col;
+        token.col_end += col;
+        tokens.push(token);
+        col+=offset;
+    }
+    Ok(tokens)
+    
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -129,7 +147,7 @@ mod tests {
 
 
 fn main() {
-    println!("Hallo welt");
-    let my_token = match_token("abd");
+    println!("Starting program");
+    let my_token = match_line("REM hallo");
     println!("{:#?}", my_token);
 }
