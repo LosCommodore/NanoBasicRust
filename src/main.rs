@@ -5,6 +5,7 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 #[allow(unused)]
 #[derive(Debug)]
+#[derive(PartialEq)]
 enum TokenType {
     Comment,
     Whitespace,
@@ -35,6 +36,7 @@ enum TokenType {
 
 #[allow(unused)]
 #[derive(Debug)]
+#[derive(PartialEq)]
 struct Token{
     kind: TokenType,
     line_num: usize,
@@ -50,11 +52,14 @@ struct Case {
 
 lazy_static::lazy_static! {
     static ref CASES: [Case; 2] = [
+        // -- Comment
         Case {
-            regex: Regex::new(r"rem.*").unwrap(),
+            regex: Regex::new(r"(?i)rem.*").unwrap(),
             capture: false,
             ctor: |_v: &str|TokenType::Comment,
         },
+
+        // - Variable
         Case {
             regex: Regex::new(r"[A-Za-z_]+").unwrap(),
             capture: true,
@@ -64,7 +69,7 @@ lazy_static::lazy_static! {
 }
 
 
-fn find_rem(line: &str) -> Result<Token> {
+fn match_token(text: &str) -> Result<Token> {
     fn std_token(case: &Case, text: &str) -> Option<Token> {
         let m = case.regex.find(text)?;
         Some(Token{
@@ -94,18 +99,37 @@ fn find_rem(line: &str) -> Result<Token> {
         .iter()
         .find_map(|case| {
             match case.capture {
-                true  => capture_token(case, line),
-                false => std_token(case, line),
+                true  => capture_token(case, text),
+                false => std_token(case, text),
             }
         });
     
-    let token = token.expect("Syntax Error");
-    Ok(token)
+    let token = token.ok_or("Syntax Error".into());    
+    token
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+
+    #[test]
+    fn test_match_token() {
+        let params = [
+            ("rem hallo", Token{kind: TokenType::Comment, line_num:0, col_start:0, col_end:9}),
+            ("REM HaLLo", Token{kind: TokenType::Comment, line_num:0, col_start:0, col_end:9}),
+            ];
+
+        for (text, result) in &params {
+            println!("Using regex: {}", *text);
+            assert_eq!(match_token(*text).unwrap(), *result);
+        }
+    }
 }
 
 
 fn main() {
     println!("Hallo welt");
-    let my_token = find_rem("rem hallo welt");
+    let my_token = match_token("abd");
     println!("{:#?}", my_token);
 }

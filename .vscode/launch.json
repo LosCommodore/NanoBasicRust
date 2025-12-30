@@ -5,7 +5,7 @@
             "name": "Debug Rust (MSVC)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}\\target\\debug\\${workspaceFolderBasename}.exe",
+            "program": "${workspaceFolder}\\target\\debug\\cs_rust.exe",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
