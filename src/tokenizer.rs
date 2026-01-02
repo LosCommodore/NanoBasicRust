@@ -123,7 +123,7 @@ pub fn match_line(line: &str) -> Result<Vec<Token>> {
     let mut col = 0;
     while line.len() > col {
         let token = match_token(&line[col..], col)?;
-        println!("found token: {:?}", token);
+        //println!("found token: {:?}", token);
         let offset = token.col_end - token.col_start;
       
         if !IGNORE_TOKEN_TYPES.contains(&token.kind) {
