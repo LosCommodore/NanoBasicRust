@@ -96,40 +96,37 @@ static CASES: Lazy<[Case; 25]> = Lazy::new(|| [
 ]);
 
 
-fn match_token(text: &str) -> Result<Token> {
-    fn std_token(case: &Case, text: &str) -> Option<Token> {
+fn match_token(text: &str, col_start: usize) -> Result<Token> {
+    fn find_token(case: &Case, text: &str, col_start: usize) -> Option<Token> {
         let m = case.regex.find(text)?;
+        let content = &text[m.start()..m.end()];
 
         Some(Token{
-            kind: (case.ctor)(text),
+            kind: (case.ctor)(content),
             line_num: 0,
-            col_start: m.start(),
-            col_end: m.end() -1
+            col_start: m.start() + col_start,
+            col_end: m.end() + col_start
         })
     }
 
     
     let token = CASES
         .iter()
-        .find_map(|case| std_token(case, text));
+        .find_map(|case| find_token(case, text, col_start));
         
     let token = token.ok_or("Syntax Error".into());    
     token
 }
 
 fn match_line(line: &str) -> Result<Vec<Token>> {
-    let mut parse_line = line;
     let mut tokens = Vec::<Token>::new();
     let mut col = 0;
-    while parse_line.len() > col {
-        parse_line = &line[col..];
-
-        let mut token = match_token(parse_line)?;
-        let offset = token.col_end - token.col_start+1;
+    while line.len() > col {
+        let token = match_token(&line[col..], col)?;
+        println!("found token: {:?}", token);
+        let offset = token.col_end - token.col_start;
       
         if !IGNORE_TOKEN_TYPES.contains(&token.kind) {
-            token.col_start += col;
-            token.col_end += col;
             tokens.push(token);
         }
         
@@ -146,17 +143,50 @@ mod tests {
     #[test]
     fn test_match_token() {
         let params = [
-            (r"rem hallo", Token{kind: TokenType::Comment, line_num:0, col_start:0, col_end:8}),
-            (r"REM HaLLo", Token{kind: TokenType::Comment, line_num:0, col_start:0, col_end:8}),
-            (r"goto", Token{kind: TokenType::Goto, line_num:0, col_start:0, col_end:3}),
-            (r")", Token{kind: TokenType::CloseParen, line_num:0, col_start:0, col_end:0}),
-            (r"ABC", Token{kind: TokenType::Variable("ABC".to_string()), line_num:0, col_start:0, col_end:2}),
+            (r"rem hallo", Token{kind: TokenType::Comment, line_num:0, col_start:0, col_end:9}),
+            (r"REM HaLLo", Token{kind: TokenType::Comment, line_num:0, col_start:0, col_end:9}),
+            (r"goto", Token{kind: TokenType::Goto, line_num:0, col_start:0, col_end:4}),
+            (r")", Token{kind: TokenType::CloseParen, line_num:0, col_start:0, col_end:1}),
+            (r"ABC", Token{kind: TokenType::Variable("ABC".to_string()), line_num:0, col_start:0, col_end:3}),
             ];
 
+      
         for (text, result) in &params {
             println!("Using regex: {}", *text);
-            assert_eq!(match_token(*text).unwrap(), *result);
+            assert_eq!(match_token(*text,0).unwrap(), *result);
         }
+    }
+
+    #[test]
+    fn test_match_line() {
+
+        let param = r"a = 3";
+
+          let expected = [      
+            Token {
+                kind: TokenType::Variable("a".to_string()),
+                line_num: 0,
+                col_start: 0,
+                col_end: 1,
+            },
+            Token {
+                kind: TokenType::Equal,
+                line_num: 0,
+                col_start: 2,
+                col_end: 3,
+            },
+            Token {
+                kind: TokenType::Number(3),
+                line_num: 0,
+                col_start: 4,
+                col_end: 5,
+            },
+        ];
+
+        println!("Using regex: {}", param);
+        let m = match_line(param).unwrap();
+        print!("{:#?}",m);
+        assert_eq!(expected, *m);
     }
 }
 
