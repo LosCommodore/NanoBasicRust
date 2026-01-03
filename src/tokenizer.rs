@@ -1,10 +1,11 @@
 use regex::Regex;
 use std::error::Error;
 use once_cell::sync::Lazy;
+use std::fs::{File};
+use std::io::{BufRead, BufReader};
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
-#[allow(unused)]
 #[derive(Debug)]
 #[derive(PartialEq)]
 enum TokenType {
@@ -46,7 +47,6 @@ pub struct Token{
     col_start: usize,
     col_end: usize,
 }
-
 
 #[allow(unused)]
 struct Case {
@@ -118,7 +118,7 @@ fn match_token(text: &str, col_start: usize) -> Result<Token> {
     token
 }
 
-pub fn match_line(line: &str) -> Result<Vec<Token>> {
+fn match_line(line: &str) -> Result<Vec<Token>> {
     let mut tokens = Vec::<Token>::new();
     let mut col = 0;
     while line.len() > col {
@@ -135,6 +135,30 @@ pub fn match_line(line: &str) -> Result<Vec<Token>> {
     Ok(tokens)
     
 }
+
+pub fn read_file(path: &str) -> Result<Vec<String>> {
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+
+    let out: Vec<String>  = reader
+        .lines()
+        .map(|l| l.unwrap())
+        .collect();
+    Ok(out)
+}
+
+pub fn tokenize(lines: &Vec<String>) -> Result<Vec<Token>> {
+    let tokens = lines
+    .iter()
+    .map(|line| match_line(line)) 
+    .collect::<Result<Vec<_>>>()?           
+    .into_iter()
+    .flatten()
+    .collect();
+
+    Ok(tokens)
+}
+
 
 #[cfg(test)]
 mod tests {
