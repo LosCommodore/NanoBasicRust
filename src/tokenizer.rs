@@ -38,7 +38,6 @@ enum TokenType {
 
 const IGNORE_TOKEN_TYPES: &[TokenType] = &[TokenType::Whitespace, TokenType::Comment];
 
-#[allow(unused)]
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct Token{
