@@ -118,15 +118,16 @@ fn match_token(text: &str, col_start: usize) -> Result<Token> {
     token
 }
 
-fn match_line(line: &str) -> Result<Vec<Token>> {
+fn match_line(line: &str, line_num: usize) -> Result<Vec<Token>> {
     let mut tokens = Vec::<Token>::new();
     let mut col = 0;
     while line.len() > col {
-        let token = match_token(&line[col..], col)?;
+        let mut token = match_token(&line[col..], col)?;
         //println!("found token: {:?}", token);
         let offset = token.col_end - token.col_start;
       
         if !IGNORE_TOKEN_TYPES.contains(&token.kind) {
+            token.line_num = line_num; 
             tokens.push(token);
         }
         
@@ -150,7 +151,8 @@ pub fn read_file(path: &str) -> Result<Vec<String>> {
 pub fn tokenize(lines: &Vec<String>) -> Result<Vec<Token>> {
     let tokens = lines
     .iter()
-    .map(|line| match_line(line)) 
+    .enumerate()
+    .map(|(i, line)| match_line(line, i)) 
     .collect::<Result<Vec<_>>>()?           
     .into_iter()
     .flatten()
@@ -208,7 +210,7 @@ mod tests {
         ];
 
         println!("Using regex: {}", param);
-        let m = match_line(param).unwrap();
+        let m = match_line(param,0).unwrap();
         print!("{:#?}",m);
         assert_eq!(expected, *m);
     }
