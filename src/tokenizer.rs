@@ -1,13 +1,12 @@
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::error::Error;
-use once_cell::sync::Lazy;
-use std::fs::{File};
+use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum TokenType {
     Comment,
     Whitespace,
@@ -38,9 +37,8 @@ pub enum TokenType {
 
 const IGNORE_TOKEN_TYPES: &[TokenType] = &[TokenType::Whitespace, TokenType::Comment];
 
-#[derive(Debug)]
-#[derive(PartialEq)]
-pub struct Token{
+#[derive(Debug, PartialEq)]
+pub struct Token {
     pub kind: TokenType,
     pub line_num: usize,
     pub col_start: usize,
@@ -59,61 +57,61 @@ macro_rules! case {
     ($regex:expr, $capture:expr, $ctor:expr) => {
         Case {
             regex_str: $regex.to_string(),
-            regex: Regex::new(concat!("^",$regex)).unwrap(),
+            regex: Regex::new(concat!("^", $regex)).unwrap(),
             capture: $capture,
             ctor: $ctor,
         }
     };
 }
 
-static CASES: Lazy<[Case; 25]> = Lazy::new(|| [
-    case!(r"(?i)rem.*", false, |_v| TokenType::Comment),
-    case!(r"[ \t\n\r]", false, |_v| TokenType::Whitespace),
-    case!(r"(?i)print", false, |_v| TokenType::Print),
-    case!(r"(?i)if", false, |_v| TokenType::If),
-    case!(r"(?i)then", false, |_v| TokenType::Then),
-    case!(r"(?i)let", false, |_v| TokenType::Let),
-    case!(r"(?i)goto", false, |_v| TokenType::Goto),
-    case!(r"(?i)gosub", false, |_v| TokenType::Gosub),
-    case!(r"(?i)return", false, |_v| TokenType::Return),
-    case!(r",", false, |_v| TokenType::Comma),
-    case!(r"=", false, |_v| TokenType::Equal),
-    case!(r"<>|><", false, |_v| TokenType::NotEqual),
-    case!(r"<=", false, |_v| TokenType::LessEqual),
-    case!(r">=", false, |_v| TokenType::GreaterEqual),
-    case!(r"<", false, |_v| TokenType::Less),
-    case!(r">", false, |_v| TokenType::Greater),
-    case!(r"\+", false, |_v| TokenType::Plus),
-    case!(r"-", false, |_v| TokenType::Minus),
-    case!(r"\*", false, |_v| TokenType::Multiply),
-    case!(r"/", false, |_v| TokenType::Divide),
-    case!(r"\(", false, |_v| TokenType::OpenParen),
-    case!(r"\)", false, |_v| TokenType::CloseParen),
-    case!(r"[A-Za-z_]+", true, |v| TokenType::Variable(v.to_string())),
-    case!(r"-?[0-9]+", true, |v| TokenType::Number(v.parse().unwrap())),
-    case!(r".*", true, |v| TokenType::String(v.to_string())),
-]);
-
+static CASES: Lazy<[Case; 25]> = Lazy::new(|| {
+    [
+        case!(r"(?i)rem.*", false, |_v| TokenType::Comment),
+        case!(r"[ \t\n\r]", false, |_v| TokenType::Whitespace),
+        case!(r"(?i)print", false, |_v| TokenType::Print),
+        case!(r"(?i)if", false, |_v| TokenType::If),
+        case!(r"(?i)then", false, |_v| TokenType::Then),
+        case!(r"(?i)let", false, |_v| TokenType::Let),
+        case!(r"(?i)goto", false, |_v| TokenType::Goto),
+        case!(r"(?i)gosub", false, |_v| TokenType::Gosub),
+        case!(r"(?i)return", false, |_v| TokenType::Return),
+        case!(r",", false, |_v| TokenType::Comma),
+        case!(r"=", false, |_v| TokenType::Equal),
+        case!(r"<>|><", false, |_v| TokenType::NotEqual),
+        case!(r"<=", false, |_v| TokenType::LessEqual),
+        case!(r">=", false, |_v| TokenType::GreaterEqual),
+        case!(r"<", false, |_v| TokenType::Less),
+        case!(r">", false, |_v| TokenType::Greater),
+        case!(r"\+", false, |_v| TokenType::Plus),
+        case!(r"-", false, |_v| TokenType::Minus),
+        case!(r"\*", false, |_v| TokenType::Multiply),
+        case!(r"/", false, |_v| TokenType::Divide),
+        case!(r"\(", false, |_v| TokenType::OpenParen),
+        case!(r"\)", false, |_v| TokenType::CloseParen),
+        case!(r"[A-Za-z_]+", true, |v| TokenType::Variable(v.to_string())),
+        case!(r"-?[0-9]+", true, |v| TokenType::Number(v.parse().unwrap())),
+        case!(r".*", true, |v| TokenType::String(v.to_string())),
+    ]
+});
 
 fn match_token(text: &str, col_start: usize) -> Result<Token> {
     fn find_token(case: &Case, text: &str, col_start: usize) -> Option<Token> {
         let m = case.regex.find(text)?;
         let content = &text[m.start()..m.end()];
 
-        Some(Token{
+        Some(Token {
             kind: (case.ctor)(content),
             line_num: 0,
             col_start: m.start() + col_start,
-            col_end: m.end() + col_start
+            col_end: m.end() + col_start,
         })
     }
 
-    
     let token = CASES
         .iter()
         .find_map(|case| find_token(case, text, col_start));
-        
-    let token = token.ok_or("Syntax Error".into());    
+
+    let token = token.ok_or("Syntax Error".into());
     token
 }
 
@@ -124,42 +122,37 @@ fn match_line(line: &str, line_num: usize) -> Result<Vec<Token>> {
         let mut token = match_token(&line[col..], col)?;
         //println!("found token: {:?}", token);
         let offset = token.col_end - token.col_start;
-      
+
         if !IGNORE_TOKEN_TYPES.contains(&token.kind) {
-            token.line_num = line_num; 
+            token.line_num = line_num;
             tokens.push(token);
         }
-        
-        col+=offset;
+
+        col += offset;
     }
     Ok(tokens)
-    
 }
 
 pub fn read_file(path: &str) -> Result<Vec<String>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
 
-    let out: Vec<String>  = reader
-        .lines()
-        .map(|l| l.unwrap())
-        .collect();
+    let out: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
     Ok(out)
 }
 
 pub fn tokenize(lines: &Vec<String>) -> Result<Vec<Token>> {
     let tokens = lines
-    .iter()
-    .enumerate()
-    .map(|(i, line)| match_line(line, i)) 
-    .collect::<Result<Vec<_>>>()?           
-    .into_iter()
-    .flatten()
-    .collect();
+        .iter()
+        .enumerate()
+        .map(|(i, line)| match_line(line, i))
+        .collect::<Result<Vec<_>>>()?
+        .into_iter()
+        .flatten()
+        .collect();
 
     Ok(tokens)
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -168,26 +161,64 @@ mod tests {
     #[test]
     fn test_match_token() {
         let params = [
-            (r"rem hallo", Token{kind: TokenType::Comment, line_num:0, col_start:0, col_end:9}),
-            (r"REM HaLLo", Token{kind: TokenType::Comment, line_num:0, col_start:0, col_end:9}),
-            (r"goto", Token{kind: TokenType::Goto, line_num:0, col_start:0, col_end:4}),
-            (r")", Token{kind: TokenType::CloseParen, line_num:0, col_start:0, col_end:1}),
-            (r"ABC", Token{kind: TokenType::Variable("ABC".to_string()), line_num:0, col_start:0, col_end:3}),
-            ];
+            (
+                r"rem hallo",
+                Token {
+                    kind: TokenType::Comment,
+                    line_num: 0,
+                    col_start: 0,
+                    col_end: 9,
+                },
+            ),
+            (
+                r"REM HaLLo",
+                Token {
+                    kind: TokenType::Comment,
+                    line_num: 0,
+                    col_start: 0,
+                    col_end: 9,
+                },
+            ),
+            (
+                r"goto",
+                Token {
+                    kind: TokenType::Goto,
+                    line_num: 0,
+                    col_start: 0,
+                    col_end: 4,
+                },
+            ),
+            (
+                r")",
+                Token {
+                    kind: TokenType::CloseParen,
+                    line_num: 0,
+                    col_start: 0,
+                    col_end: 1,
+                },
+            ),
+            (
+                r"ABC",
+                Token {
+                    kind: TokenType::Variable("ABC".to_string()),
+                    line_num: 0,
+                    col_start: 0,
+                    col_end: 3,
+                },
+            ),
+        ];
 
-      
         for (text, result) in &params {
             println!("Using regex: {}", *text);
-            assert_eq!(match_token(*text,0).unwrap(), *result);
+            assert_eq!(match_token(*text, 0).unwrap(), *result);
         }
     }
 
     #[test]
     fn test_match_line() {
-
         let param = r"a = 3";
 
-          let expected = [      
+        let expected = [
             Token {
                 kind: TokenType::Variable("a".to_string()),
                 line_num: 0,
@@ -209,9 +240,8 @@ mod tests {
         ];
 
         println!("Using regex: {}", param);
-        let m = match_line(param,0).unwrap();
-        print!("{:#?}",m);
+        let m = match_line(param, 0).unwrap();
+        print!("{:#?}", m);
         assert_eq!(expected, *m);
     }
 }
-
