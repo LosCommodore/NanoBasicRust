@@ -8,7 +8,7 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 #[derive(Debug)]
 #[derive(PartialEq)]
-enum TokenType {
+pub enum TokenType {
     Comment,
     Whitespace,
     Print,
@@ -41,10 +41,10 @@ const IGNORE_TOKEN_TYPES: &[TokenType] = &[TokenType::Whitespace, TokenType::Com
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct Token{
-    kind: TokenType,
-    line_num: usize,
-    col_start: usize,
-    col_end: usize,
+    pub kind: TokenType,
+    pub line_num: usize,
+    pub col_start: usize,
+    pub col_end: usize,
 }
 
 #[allow(unused)]

@@ -1,4 +1,5 @@
 pub mod tokenizer;
+pub mod parser;
 use tokenizer::{tokenize};
 use std::hint::black_box;
 
@@ -8,5 +9,6 @@ fn main() {
     let txt = tokenizer::read_file(file).expect("could not read file");
     let tokens = tokenize(&txt).expect("Failed to read");
     black_box(&tokens);
-    println!("{:#?}", tokens);
+    parser::parse(&tokens);
+    //println!("{:#?}", tokens);
 }
