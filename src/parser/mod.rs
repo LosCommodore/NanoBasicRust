@@ -67,6 +67,7 @@ where
         .next()
         .ok_or("Syntax error: unexpected end of line")?;
 
+    println!("{:?}",&var);
     let TokenType::Variable(var_name) = &var.kind else {
         return Err("Syntax Error: expected variable ".into());
     };
@@ -174,7 +175,7 @@ pub fn parse(tokens: &Vec<Token>) {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::parse_let_statement;
+    use crate::parser::{parse_line};
     use crate::tokenizer::{Token, TokenType};
 
     fn dummy_token(tk: TokenType) -> Token {
@@ -187,7 +188,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_let_statement() {
+    fn test_line_let_statement() {
         let tokens = vec![
             dummy_token(TokenType::Number(10)),
             dummy_token(TokenType::Let),
@@ -197,7 +198,7 @@ mod tests {
         ];
 
         let mut iter_tokens = tokens.iter().peekable();
-        let result = parse_let_statement(&mut iter_tokens);
+        let result = parse_line(&mut iter_tokens);
         println!("{:#?}", &result)
     }
 }
