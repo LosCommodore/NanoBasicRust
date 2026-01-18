@@ -5,6 +5,7 @@ use std::iter::Peekable;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 #[allow(unused)]
+#[derive(Debug, PartialEq)]
 struct Statement {
     node: Node,
     line_id: usize,
@@ -12,16 +13,18 @@ struct Statement {
 }
 
 #[allow(unused)]
+#[derive(Debug, PartialEq)]
 enum StatementEnum {
     Print,
     Return,
     If(Box<IfStatement>),
     GoSub,
     GoTo,
-    Let,
+    Let(Box<LetStatement>),
 }
 
 #[allow(unused)]
+#[derive(Debug, PartialEq)]
 struct Node {
     line_num: usize,
     col_start: usize,
@@ -29,6 +32,7 @@ struct Node {
 }
 
 #[allow(unused)]
+#[derive(Debug, PartialEq)]
 struct BooleanExpression {
     operator: TokenType,
     left_expr: NumericExpression,
@@ -36,24 +40,54 @@ struct BooleanExpression {
 }
 
 #[allow(unused)]
+#[derive(Debug, PartialEq)]
 struct NumericExpression {
     node: Node,
 }
 
 #[allow(unused)]
+#[derive(Debug, PartialEq)]
 struct IfStatement {
     boolean_expr: BooleanExpression,
     then_statement: Statement,
+}
+
+#[allow(unused)]
+#[derive(Debug, PartialEq)]
+struct LetStatement {
+    name: String,
+    expr: NumericExpression,
 }
 
 fn parse_let_statement<'a, I>(tokens: &mut Peekable<I>) -> Result<StatementEnum>
 where
     I: Iterator<Item = &'a Token>,
 {
-    Ok(StatementEnum::Let)
+    let var = tokens
+        .next()
+        .ok_or("Syntax error: unexpected end of line")?;
+
+    let TokenType::Variable(var_name) = &var.kind else {
+        return Err("Syntax Error: expected variable ".into());
+    };
+
+    let expr = NumericExpression {
+        node: Node {
+            line_num: 2,
+            col_start: 3,
+            col_end: 4,
+        },
+    };
+
+    let let_statement: LetStatement = LetStatement {
+        name: var_name.clone(),
+        expr,
+    };
+    let statement_enum = StatementEnum::Let(Box::new(let_statement));
+    Ok(statement_enum)
 }
 
-fn parse_if_statement<'a, I>(tokens: &mut Peekable<I>) -> Result<StatementEnum>
+fn parse_if_statement<'a, I>(_tokens: &mut Peekable<I>) -> Result<StatementEnum>
 where
     I: Iterator<Item = &'a Token>,
 {
@@ -135,5 +169,35 @@ pub fn parse(tokens: &Vec<Token>) {
 
     while let Some(_t) = iter_token.peek() {
         parse_line(&mut iter_token).expect("error while parsing line");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::parser::parse_let_statement;
+    use crate::tokenizer::{Token, TokenType};
+
+    fn dummy_token(tk: TokenType) -> Token {
+          Token {
+                kind: tk,
+                line_num: 10,
+                col_start: 1,
+                col_end: 2,
+          }
+    }
+
+    #[test]
+    fn test_parse_let_statement() {
+        let tokens = vec![
+            dummy_token(TokenType::Number(10)),
+            dummy_token(TokenType::Let),
+            dummy_token(TokenType::Variable("ABC".to_string())),
+            dummy_token(TokenType::Equal),
+            dummy_token(TokenType::Number(42)),
+        ];
+
+        let mut iter_tokens = tokens.iter().peekable();
+        let result = parse_let_statement(&mut iter_tokens);
+        println!("{:#?}", &result)
     }
 }
