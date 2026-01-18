@@ -1,9 +1,7 @@
-use std::error::Error;
-use std::iter::Peekable;
-type Result<T> = std::result::Result<T, Box<dyn Error>>;
-use super::expressions::{BooleanExpression, NumericExpression};
-use super::{Node, Statement, StatementEnum};
-use crate::tokenizer::{Token, TokenType};
+//use std::iter::Peekable;
+use super::expressions::{BooleanExpression};
+use super::{Statement};
+//use crate::tokenizer::{Token, TokenType};
 
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
@@ -12,6 +10,7 @@ pub struct IfStatement {
     then_statement: Statement,
 }
 
+/*
 impl IfStatement {
     pub fn create<'a, I>(_tokens: &mut Peekable<I>) -> Result<Self>
     where
@@ -25,6 +24,7 @@ impl IfStatement {
                     col_start: 3,
                     col_end: 4,
                 },
+                kind: 
             },
             right_expr: NumericExpression {
                 node: Node {
@@ -51,3 +51,4 @@ impl IfStatement {
         })
     }
 }
+*/

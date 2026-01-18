@@ -47,6 +47,7 @@ where
     Ok(statement_enum)
 }
 
+/*
 fn parse_if_statement<'a, I>(tokens: &mut Peekable<I>) -> Result<StatementEnum>
 where
     I: Iterator<Item = &'a Token>,
@@ -54,6 +55,7 @@ where
     let if_statement = IfStatement::create(tokens)?;
     Ok(StatementEnum::If(Box::new(if_statement)))
 }
+*/
 
 fn parse_line<'a, I>(tokens: &mut Peekable<I>) -> Result<Statement>
 where
@@ -72,7 +74,7 @@ where
 
     let kind: StatementEnum = match token.kind {
         TokenType::Print => StatementEnum::Print,
-        TokenType::If => parse_if_statement(tokens)?,
+        //TokenType::If => parse_if_statement(tokens)?,
         TokenType::Let => parse_let_statement(tokens)?,
         TokenType::Goto => StatementEnum::GoTo,
         TokenType::Gosub => StatementEnum::GoSub,

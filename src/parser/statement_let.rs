@@ -1,9 +1,8 @@
-use std::error::Error;
-use std::iter::Peekable;
-type Result<T> = std::result::Result<T, Box<dyn Error>>;
-use super::Node;
-use super::expressions::NumericExpression;
+use super::{Result, Node};
+use super::expressions::{NumericExpression, NumericExpressionKind};
 use crate::tokenizer::{Token, TokenType};
+use std::iter::Peekable;
+
 
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
@@ -17,12 +16,20 @@ impl LetStatement {
     where
         I: Iterator<Item = &'a Token>,
     {
-        let var = tokens
+        let mut token = tokens
             .next()
             .ok_or("Syntax error: unexpected end of line")?;
 
-        println!("{:?}", &var);
-        let TokenType::Variable(var_name) = &var.kind else {
+        println!("{:?}", &token);
+        let TokenType::Variable(var_name) = &token.kind else {
+            return Err("Syntax Error: expected variable ".into());
+        };
+
+        token = tokens
+            .next()
+            .ok_or("Syntax error: unexpected end of line")?;
+
+        let TokenType::Equal = &token.kind else {
             return Err("Syntax Error: expected variable ".into());
         };
 
@@ -32,6 +39,7 @@ impl LetStatement {
                 col_start: 3,
                 col_end: 4,
             },
+            kind: NumericExpressionKind::NumberLiteral(42)
         };
 
         Ok(LetStatement {
