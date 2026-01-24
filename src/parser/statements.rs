@@ -15,14 +15,8 @@ pub enum StatementEnum {
     Let(Box<LetStatement>),
 }
 
-fn parse_let_statement<'a, I>(tokens: &mut Peekable<I>) -> Result<StatementEnum>
-where
-    I: Iterator<Item = &'a Token>,
-{
-    let let_statement = LetStatement::create(tokens)?;
-    let statement_enum = StatementEnum::Let(Box::new(let_statement));
-    Ok(statement_enum)
-}
+use StatementEnum::*;
+
 
 impl StatementEnum {
     pub fn from_token<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
@@ -34,7 +28,7 @@ impl StatementEnum {
         let statement = match token.kind {
             TokenType::Print => StatementEnum::Print,
             //TokenType::If => parse_if_statement(tokens)?,
-            TokenType::Let => parse_let_statement(tokens)?,
+            TokenType::Let => Let(Box::new(LetStatement::create(tokens)?)),
             TokenType::Goto => StatementEnum::GoTo,
             TokenType::Gosub => StatementEnum::GoSub,
             TokenType::Return => StatementEnum::Return,
