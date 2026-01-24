@@ -1,7 +1,7 @@
-use super::{Result, Node};
+use super::{Node, Result};
+use crate::tokenizer::Token;
 use crate::tokenizer::TokenType;
 use std::iter::Peekable;
-use crate::tokenizer::{Token};
 
 // # A numeric expression is something that can be computed into a number.
 #[allow(unused)]
@@ -23,11 +23,18 @@ pub struct BooleanExpression {
 #[derive(Debug, PartialEq)]
 pub enum NumericExpressionKind {
     /// A numeric expression with two operands like 2 + 2 or 8 / 4
-    BinaryOperation{left: Box<NumericExpression>, right: Box<NumericExpression>,operator:char},
+    BinaryOperation {
+        left: Box<NumericExpression>,
+        right: Box<NumericExpression>,
+        operator: char,
+    },
 
     /// A numeric expression with one operand, like -4
-    UnaryOperation{expression: Box<NumericExpression>, operator:char},
-    
+    UnaryOperation {
+        expression: Box<NumericExpression>,
+        operator: char,
+    },
+
     /// An integer written out in NanoBASIC code
     NumberLiteral(usize),
 
@@ -40,8 +47,7 @@ impl NumericExpression {
     where
         I: Iterator<Item = &'a Token>,
     {
-
-         Ok(NumericExpression {
+        Ok(NumericExpression {
             node: Node {
                 line_num: 2,
                 col_start: 3,

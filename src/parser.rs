@@ -1,10 +1,10 @@
 pub mod expressions;
 pub mod statement_if;
 pub mod statement_let;
+pub mod statements;
 
 use crate::tokenizer::{Token, TokenType};
-use statement_if::IfStatement;
-use statement_let::LetStatement;
+use crate::parser::statements::StatementEnum;
 use std::error::Error;
 use std::iter::Peekable;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -27,35 +27,6 @@ pub struct Node {
     col_end: usize,
 }
 
-#[allow(unused)]
-#[derive(Debug, PartialEq)]
-enum StatementEnum {
-    Print,
-    Return,
-    If(Box<IfStatement>),
-    GoSub,
-    GoTo,
-    Let(Box<LetStatement>),
-}
-
-fn parse_let_statement<'a, I>(tokens: &mut Peekable<I>) -> Result<StatementEnum>
-where
-    I: Iterator<Item = &'a Token>,
-{
-    let let_statement = LetStatement::create(tokens)?;
-    let statement_enum = StatementEnum::Let(Box::new(let_statement));
-    Ok(statement_enum)
-}
-
-/*
-fn parse_if_statement<'a, I>(tokens: &mut Peekable<I>) -> Result<StatementEnum>
-where
-    I: Iterator<Item = &'a Token>,
-{
-    let if_statement = IfStatement::create(tokens)?;
-    Ok(StatementEnum::If(Box::new(if_statement)))
-}
-*/
 
 fn parse_line<'a, I>(tokens: &mut Peekable<I>) -> Result<Statement>
 where
@@ -70,17 +41,7 @@ where
     println!("line line_id: {:?}", line_id);
     println!("line token: {:?}", line_token);
 
-    let token = tokens.next().expect("Token not found");
-
-    let kind: StatementEnum = match token.kind {
-        TokenType::Print => StatementEnum::Print,
-        //TokenType::If => parse_if_statement(tokens)?,
-        TokenType::Let => parse_let_statement(tokens)?,
-        TokenType::Goto => StatementEnum::GoTo,
-        TokenType::Gosub => StatementEnum::GoSub,
-        TokenType::Return => StatementEnum::Return,
-        _ => return Err("error".into()),
-    };
+    let kind =  StatementEnum::from_token(tokens)?;
 
     let node = Node {
         line_num: 1,

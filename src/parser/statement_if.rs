@@ -1,6 +1,6 @@
 //use std::iter::Peekable;
-use super::expressions::{BooleanExpression};
-use super::{Statement};
+use super::Statement;
+use super::expressions::BooleanExpression;
 //use crate::tokenizer::{Token, TokenType};
 
 #[allow(unused)]
@@ -24,7 +24,7 @@ impl IfStatement {
                     col_start: 3,
                     col_end: 4,
                 },
-                kind: 
+                kind:
             },
             right_expr: NumericExpression {
                 node: Node {

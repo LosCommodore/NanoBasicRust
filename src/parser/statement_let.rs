@@ -1,8 +1,7 @@
-use super::{Result, Node};
 use super::expressions::{NumericExpression, NumericExpressionKind};
+use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
 use std::iter::Peekable;
-
 
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
@@ -39,7 +38,7 @@ impl LetStatement {
                 col_start: 3,
                 col_end: 4,
             },
-            kind: NumericExpressionKind::NumberLiteral(42)
+            kind: NumericExpressionKind::NumberLiteral(42),
         };
 
         Ok(LetStatement {
