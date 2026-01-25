@@ -41,22 +41,42 @@ pub enum NumericExpressionKind {
     VarRetrieve(String),
 }
 
+
 impl NumericExpressionKind {
-    pub fn create<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
+    pub fn parse_factor<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
     where
         I: Iterator<Item = &'a Token>,
     {
-        let token = tokens
+           let token = tokens
             .next()
             .ok_or("Syntax error: unexpected end of line")?;
 
         let output = match &token.kind {
-            TokenType::Variable(num) => NumericExpressionKind::VarRetrieve(num.clone()),
+            TokenType::Variable(var) => NumericExpressionKind::VarRetrieve(var.clone()),
+            TokenType::Number(num) => NumericExpressionKind::NumberLiteral(*num),
+            TokenType::OpenParen => {                
+                let expr = NumericExpressionKind::parse_term(tokens)?;
+
+                let TokenType::CloseParen = token.kind else {
+                    return Err("Invalid Token. Expected ')'".into())
+                };
+                
+                expr
+            }
             _ => return Err("Invalid Token".into())
         };
 
         Ok(output)
     }
+
+    pub fn parse_term<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
+    where
+        I: Iterator<Item = &'a Token>,
+    {
+        let factor = NumericExpressionKind::parse_factor(tokens);
+        factor
+    }
+     
 }
 
 #[cfg(test)]
@@ -74,7 +94,7 @@ mod tests {
         let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> =
             tokens.iter().peekable();
 
-        let x = NumericExpressionKind::create(&mut iter_tokens);
+        let x = NumericExpressionKind::parse_term(&mut iter_tokens);
         println!("{:#?}", x);
         assert!(true);
         Ok(())
