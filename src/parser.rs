@@ -22,7 +22,7 @@ pub struct Statement {
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct Node {
-    line_num: usize,
+    line_num: usize,  // line number (in text editor)
     col_start: usize,
     col_end: usize,
 }
@@ -44,7 +44,7 @@ where
     let kind =  StatementEnum::from_token(tokens)?;
 
     let node = Node {
-        line_num: 1,
+        line_num: line_token.line_num,
         col_start: 1,
         col_end: 1,
     };

@@ -32,10 +32,12 @@ impl LetStatement {
             return Err("Syntax Error: expected variable ".into());
         };
 
+        // create numeric Expression here
+
         let expr = NumericExpression {
             node: Node {
-                line_num: 2,
-                col_start: 3,
+                line_num: token.line_num,
+                col_start: token.col_start,
                 col_end: 4,
             },
             kind: NumericExpressionKind::NumberLiteral(42),
@@ -70,7 +72,7 @@ mod tests {
             dummy_token(TokenType::Number(42)),
         ];
 
-        let mut iter_tokens = tokens.iter().peekable();
+        let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> = tokens.iter().peekable();
         let result = LetStatement::create(&mut iter_tokens);
         println!("{:#?}", &result)
     }
