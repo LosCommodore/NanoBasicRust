@@ -17,7 +17,6 @@ pub enum StatementEnum {
 
 use StatementEnum::*;
 
-
 impl StatementEnum {
     pub fn from_token<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
     where

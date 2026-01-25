@@ -3,8 +3,8 @@ pub mod statement_if;
 pub mod statement_let;
 pub mod statements;
 
-use crate::tokenizer::{Token, TokenType};
 use crate::parser::statements::StatementEnum;
+use crate::tokenizer::{Token, TokenType};
 use std::error::Error;
 use std::iter::Peekable;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -22,11 +22,10 @@ pub struct Statement {
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct Node {
-    line_num: usize,  // line number (in text editor)
+    line_num: usize, // line number (in text editor)
     col_start: usize,
     col_end: usize,
 }
-
 
 fn parse_line<'a, I>(tokens: &mut Peekable<I>) -> Result<Statement>
 where
@@ -41,7 +40,7 @@ where
     println!("line line_id: {:?}", line_id);
     println!("line token: {:?}", line_token);
 
-    let kind =  StatementEnum::from_token(tokens)?;
+    let kind = StatementEnum::from_token(tokens)?;
 
     let node = Node {
         line_num: line_token.line_num,

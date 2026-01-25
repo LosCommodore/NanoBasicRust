@@ -1,6 +1,6 @@
 use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
-use std::iter::Peekable;
+use std::{iter::Peekable};
 
 // # A numeric expression is something that can be computed into a number.
 #[allow(unused)]
@@ -41,51 +41,41 @@ pub enum NumericExpressionKind {
     VarRetrieve(String),
 }
 
-impl NumericExpression {
-    pub fn create<'a, I>(_tokens: &mut Peekable<I>) -> Result<Self>
+impl NumericExpressionKind {
+    pub fn create<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
     where
         I: Iterator<Item = &'a Token>,
     {
-        Ok(NumericExpression {
-            node: Node {
-                line_num: 2,
-                col_start: 3,
-                col_end: 4,
-            },
-            kind: NumericExpressionKind::NumberLiteral(42),
-        })
+        let token = tokens
+            .next()
+            .ok_or("Syntax error: unexpected end of line")?;
+
+        let output = match &token.kind {
+            TokenType::Variable(num) => NumericExpressionKind::VarRetrieve(num.clone()),
+            _ => return Err("Invalid Token".into())
+        };
+
+        Ok(output)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fmt::Error;
-
-    use crate::parser::expressions::NumericExpression;
-    use crate::tokenizer::{Token, TokenType};
-
-    fn dummy_token(tk: TokenType) -> Token {
-        Token {
-            kind: tk,
-            line_num: 10,
-            col_start: 1,
-            col_end: 2,
-        }
-    }
-
-     
+    use super::Result;
+    use crate::parser::expressions::{NumericExpressionKind};
+    use crate::tokenizer::{Token, tokenize};
 
     #[test]
-    pub fn test_create_num_expr() -> Result<(),Error> {
+    pub fn test_create_num_expr() -> Result<()> {
+        let lines = vec!["2+3".to_string()];
+        let tokens = tokenize(&lines)?;
+        // println!("tokens: \n{:#?}",tokens);
 
-        let tokens = vec![
-            dummy_token(TokenType::Variable("ABC".to_string())),
-            dummy_token(TokenType::Equal),
-            dummy_token(TokenType::Number(42)),
-        ];
-        let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> = tokens.iter().peekable();
+        let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> =
+            tokens.iter().peekable();
 
-        let x = NumericExpression::create(&mut iter_tokens);
+        let x = NumericExpressionKind::create(&mut iter_tokens);
+        println!("{:#?}", x);
         assert!(true);
         Ok(())
     }

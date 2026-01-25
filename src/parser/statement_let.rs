@@ -72,7 +72,8 @@ mod tests {
             dummy_token(TokenType::Number(42)),
         ];
 
-        let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> = tokens.iter().peekable();
+        let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> =
+            tokens.iter().peekable();
         let result = LetStatement::create(&mut iter_tokens);
         println!("{:#?}", &result)
     }
