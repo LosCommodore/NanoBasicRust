@@ -6,7 +6,7 @@ use std::iter::Peekable;
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct LetStatement {
-    name: Node<String>,
+    name: String,
     expression: Node<NumericExpression>,
 }
 
@@ -22,13 +22,6 @@ impl LetStatement {
         println!("{:?}", &token);
         let TokenType::Variable(var_name) = &token.kind else {
             return Err("Syntax Error: expected variable ".into());
-        };
-
-        let name = Node {
-            col_start: token.col_start,
-            line_num: token.line_num,
-            col_end: token.col_end,
-            content: var_name.clone(),
         };
 
         token = tokens
@@ -47,7 +40,7 @@ impl LetStatement {
             content: NumericExpression::NumberLiteral(42),
         };
 
-        Ok(LetStatement { name, expression })
+        Ok(LetStatement { name:  var_name.clone(), expression })
     }
 }
 

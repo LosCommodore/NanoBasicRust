@@ -1,6 +1,7 @@
 use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
-use std::iter::Peekable;
+use std::{iter::Peekable};
+
 
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
@@ -33,28 +34,29 @@ pub enum NumericExpression {
     VarRetrieve(String),
 }
 
+
 impl NumericExpression {
     pub fn parse_factor<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
     where
         I: Iterator<Item = &'a Token>,
     {
-        let token = tokens
+           let token = tokens
             .next()
             .ok_or("Syntax error: unexpected end of line")?;
 
         let output = match &token.kind {
             TokenType::Variable(var) => NumericExpression::VarRetrieve(var.clone()),
             TokenType::Number(num) => NumericExpression::NumberLiteral(*num),
-            TokenType::OpenParen => {
+            TokenType::OpenParen => {                
                 let expr = NumericExpression::parse_term(tokens)?;
 
                 let TokenType::CloseParen = token.kind else {
-                    return Err("Invalid Token. Expected ')'".into());
+                    return Err("Invalid Token. Expected ')'".into())
                 };
-
+                
                 expr
             }
-            _ => return Err("Invalid Token".into()),
+            _ => return Err("Invalid Token".into())
         };
 
         Ok(output)
@@ -67,12 +69,13 @@ impl NumericExpression {
         let factor = NumericExpression::parse_factor(tokens);
         factor
     }
+     
 }
 
 #[cfg(test)]
 mod tests {
     use super::Result;
-    use crate::parser::expressions::NumericExpression;
+    use crate::parser::expressions::{NumericExpression};
     use crate::tokenizer::{Token, tokenize};
 
     #[test]
