@@ -2,19 +2,12 @@
 use super::Statement;
 use super::expressions::BooleanExpression;
 //use crate::tokenizer::{Token, TokenType};
-use super::Node;
 
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct IfStatement {
     boolean_expr: BooleanExpression,
     then_statement: Statement,
-}
-
-#[allow(unused)]
-pub struct NodeIfStatement {
-    if_statement: IfStatement,
-    node: Node,
 }
 
 /*

@@ -14,20 +14,31 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 #[derive(Debug, PartialEq)]
 pub struct Statement {
     line_id: usize,
-    node: Node,
     kind: StatementEnum,
 }
 
 /// Represents postion information in the code
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
-pub struct Node {
+pub struct Node<T> {
     line_num: usize, // line number (in text editor)
     col_start: usize,
     col_end: usize,
+    content: T,
 }
 
-fn parse_line<'a, I>(tokens: &mut Peekable<I>) -> Result<Statement>
+impl<T> Node<T> {
+    fn new(token: &Token, content:T) {
+        Node {
+            col_start: token.col_start,
+            line_num: token.line_num,
+            col_end: token.col_end,
+            content,
+        };
+    }
+}
+
+fn parse_line<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Statement>>
 where
     I: Iterator<Item = &'a Token>,
 {
@@ -42,17 +53,16 @@ where
 
     let kind = StatementEnum::from_token(tokens)?;
 
+    let statement = Statement { line_id, kind };
+
     let node = Node {
         line_num: line_token.line_num,
         col_start: 1,
         col_end: 1,
+        content: statement,
     };
-    let statement = Statement {
-        node,
-        line_id,
-        kind,
-    };
-    Ok(statement)
+
+    Ok(node)
 }
 
 pub fn parse(tokens: &Vec<Token>) {

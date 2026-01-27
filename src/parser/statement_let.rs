@@ -1,4 +1,4 @@
-use super::expressions::{NumericExpression, NumericExpressionKind};
+use super::expressions::NumericExpression;
 use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
 use std::iter::Peekable;
@@ -6,8 +6,8 @@ use std::iter::Peekable;
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct LetStatement {
-    name: String,
-    expr: NumericExpression,
+    name: Node<String>,
+    expression: Node<NumericExpression>,
 }
 
 impl LetStatement {
@@ -24,6 +24,13 @@ impl LetStatement {
             return Err("Syntax Error: expected variable ".into());
         };
 
+        let name = Node {
+            col_start: token.col_start,
+            line_num: token.line_num,
+            col_end: token.col_end,
+            content: var_name.clone(),
+        };
+
         token = tokens
             .next()
             .ok_or("Syntax error: unexpected end of line")?;
@@ -33,20 +40,14 @@ impl LetStatement {
         };
 
         // create numeric Expression here
-
-        let expr = NumericExpression {
-            node: Node {
-                line_num: token.line_num,
-                col_start: token.col_start,
-                col_end: 4,
-            },
-            kind: NumericExpressionKind::NumberLiteral(42),
+        let expression = Node {
+            line_num: token.line_num,
+            col_start: token.col_start,
+            col_end: 4,
+            content: NumericExpression::NumberLiteral(42),
         };
 
-        Ok(LetStatement {
-            name: var_name.clone(),
-            expr,
-        })
+        Ok(LetStatement { name, expression })
     }
 }
 

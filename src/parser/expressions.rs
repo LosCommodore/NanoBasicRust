@@ -1,36 +1,28 @@
 use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
-use std::{iter::Peekable};
-
-// # A numeric expression is something that can be computed into a number.
-#[allow(unused)]
-#[derive(Debug, PartialEq)]
-pub struct NumericExpression {
-    pub node: Node,
-    pub kind: NumericExpressionKind,
-}
+use std::iter::Peekable;
 
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct BooleanExpression {
     pub operator: TokenType,
-    pub left_expr: NumericExpression,
-    pub right_expr: NumericExpression,
+    pub left_expr: Node<NumericExpression>,
+    pub right_expr: Node<NumericExpression>,
 }
 
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
-pub enum NumericExpressionKind {
+pub enum NumericExpression {
     /// A numeric expression with two operands like 2 + 2 or 8 / 4
     BinaryOperation {
-        left: Box<NumericExpression>,
-        right: Box<NumericExpression>,
+        left: Box<Node<NumericExpression>>,
+        right: Box<Node<NumericExpression>>,
         operator: char,
     },
 
     /// A numeric expression with one operand, like -4
     UnaryOperation {
-        expression: Box<NumericExpression>,
+        expression: Box<Node<NumericExpression>>,
         operator: char,
     },
 
@@ -41,29 +33,28 @@ pub enum NumericExpressionKind {
     VarRetrieve(String),
 }
 
-
-impl NumericExpressionKind {
+impl NumericExpression {
     pub fn parse_factor<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
     where
         I: Iterator<Item = &'a Token>,
     {
-           let token = tokens
+        let token = tokens
             .next()
             .ok_or("Syntax error: unexpected end of line")?;
 
         let output = match &token.kind {
-            TokenType::Variable(var) => NumericExpressionKind::VarRetrieve(var.clone()),
-            TokenType::Number(num) => NumericExpressionKind::NumberLiteral(*num),
-            TokenType::OpenParen => {                
-                let expr = NumericExpressionKind::parse_term(tokens)?;
+            TokenType::Variable(var) => NumericExpression::VarRetrieve(var.clone()),
+            TokenType::Number(num) => NumericExpression::NumberLiteral(*num),
+            TokenType::OpenParen => {
+                let expr = NumericExpression::parse_term(tokens)?;
 
                 let TokenType::CloseParen = token.kind else {
-                    return Err("Invalid Token. Expected ')'".into())
+                    return Err("Invalid Token. Expected ')'".into());
                 };
-                
+
                 expr
             }
-            _ => return Err("Invalid Token".into())
+            _ => return Err("Invalid Token".into()),
         };
 
         Ok(output)
@@ -73,16 +64,15 @@ impl NumericExpressionKind {
     where
         I: Iterator<Item = &'a Token>,
     {
-        let factor = NumericExpressionKind::parse_factor(tokens);
+        let factor = NumericExpression::parse_factor(tokens);
         factor
     }
-     
 }
 
 #[cfg(test)]
 mod tests {
     use super::Result;
-    use crate::parser::expressions::{NumericExpressionKind};
+    use crate::parser::expressions::NumericExpression;
     use crate::tokenizer::{Token, tokenize};
 
     #[test]
@@ -94,7 +84,7 @@ mod tests {
         let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> =
             tokens.iter().peekable();
 
-        let x = NumericExpressionKind::parse_term(&mut iter_tokens);
+        let x = NumericExpression::parse_term(&mut iter_tokens);
         println!("{:#?}", x);
         assert!(true);
         Ok(())
