@@ -40,7 +40,10 @@ impl LetStatement {
             content: NumericExpression::NumberLiteral(42),
         };
 
-        Ok(LetStatement { name:  var_name.clone(), expression })
+        Ok(LetStatement {
+            name: var_name.clone(),
+            expression,
+        })
     }
 }
 

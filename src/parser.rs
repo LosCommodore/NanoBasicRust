@@ -28,7 +28,7 @@ pub struct Node<T> {
 }
 
 impl<T> Node<T> {
-    fn new(token: &Token, content:T) -> Self {
+    fn new(token: &Token, content: T) -> Self {
         Node {
             col_start: token.col_start,
             line_num: token.line_num,
