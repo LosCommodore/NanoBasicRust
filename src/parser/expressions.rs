@@ -16,6 +16,15 @@ pub enum UnaryOperationType {
     Minus,
 }
 
+#[derive(Debug, PartialEq)]
+pub enum BinaryOperationType {
+    Plus,
+    Minus,
+    Multiply,
+    Devide,
+}
+
+
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub enum NumericExpression {
@@ -23,7 +32,7 @@ pub enum NumericExpression {
     BinaryOperation {
         left: Box<Node<NumericExpression>>,
         right: Box<Node<NumericExpression>>,
-        operator: char,
+        operator: BinaryOperationType,
     },
 
     /// A numeric expression with one operand, like -4
@@ -39,6 +48,8 @@ pub enum NumericExpression {
     VarRetrieve(String),
 }
 
+/// FACTOR :=
+/// Variable | Number | (Expression) | -FACTOR
 pub fn parse_factor<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<NumericExpression>>
 where
     I: Iterator<Item = &'a Token>,
@@ -93,6 +104,8 @@ where
 }
 
 
+/// Term :=
+/// FACTOR *|/ FACTOR *|/ FACTOR ...
 pub fn parse_term<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<NumericExpression>>
 where
     I: Iterator<Item = &'a Token>,
@@ -101,6 +114,9 @@ where
     Err("not implemented".into())
 }
 
+/// Expression := 
+/// TERM +|- TERM +|- TERM ... 
+/// a term in this context is a chain of one or more factors
 pub fn parse_expression<'a, I>(_tokens: &mut Peekable<I>) -> Result<Node<NumericExpression>>
 where
     I: Iterator<Item = &'a Token>,
