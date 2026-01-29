@@ -1,7 +1,6 @@
 use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
-use std::{iter::Peekable};
-
+use std::iter::Peekable;
 
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
@@ -23,7 +22,6 @@ pub enum BinaryOperationType {
     Multiply,
     Devide,
 }
-
 
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
@@ -54,8 +52,10 @@ pub fn parse_factor<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<NumericExpre
 where
     I: Iterator<Item = &'a Token>,
 {
-    let first_token = tokens.next().ok_or("Syntax error: unexpected end of line")?;
-    
+    let first_token = tokens
+        .next()
+        .ok_or("Syntax error: unexpected end of line")?;
+
     let token = first_token;
     let this_node: Node<NumericExpression> = match &token.kind {
         TokenType::Variable(var) => {
@@ -68,41 +68,41 @@ where
             Node::new(first_token, content)
         }
 
-        TokenType::OpenParen => {                
+        TokenType::OpenParen => {
             let inner_node: Node<NumericExpression> = parse_expression(tokens)?;
 
             let TokenType::CloseParen = token.kind else {
-                return Err("Invalid Token. Expected ')'".into())
+                return Err("Invalid Token. Expected ')'".into());
             };
-            
-            Node{
+
+            Node {
                 content: inner_node.content,
                 line_num: first_token.line_num,
                 col_start: first_token.col_start,
-                col_end: inner_node.col_end
+                col_end: inner_node.col_end,
             }
-        },
+        }
 
         TokenType::Minus => {
             let factor = parse_factor(tokens)?;
             let col_end = factor.col_end;
-            let content = NumericExpression::UnaryOperation{ 
+            let content = NumericExpression::UnaryOperation {
                 expression: Box::new(factor),
-                operator: UnaryOperationType::Minus, };
+                operator: UnaryOperationType::Minus,
+            };
 
-            Node{
+            Node {
                 content,
                 line_num: token.line_num,
                 col_start: token.col_start,
-                col_end
+                col_end,
             }
         }
-        _ => return Err("Unexpected token in numeric expression.".into())
+        _ => return Err("Unexpected token in numeric expression.".into()),
     };
 
     Ok(this_node)
 }
-
 
 /// Term :=
 /// FACTOR *|/ FACTOR *|/ FACTOR ...
@@ -114,22 +114,64 @@ where
     Err("not implemented".into())
 }
 
-/// Expression := 
-/// TERM +|- TERM +|- TERM ... 
+/// Expression :=
+/// TERM +|- TERM +|- TERM ...
 /// a term in this context is a chain of one or more factors
-pub fn parse_expression<'a, I>(_tokens: &mut Peekable<I>) -> Result<Node<NumericExpression>>
+pub fn parse_expression<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<NumericExpression>>
 where
     I: Iterator<Item = &'a Token>,
 {
-    Err("Not Implemented".into())
-}
+    let mut left = parse_term(tokens)?;
+    loop {
+        let Some(token) = tokens.next() else {
+            return Ok(left);
+        };
+        left = match &token.kind {
+            t @ (TokenType::Plus | TokenType::Minus) => {
+                let col_start = left.col_start;
+                let operator = if *t == TokenType::Plus {
+                    BinaryOperationType::Plus
+                } else {
+                    BinaryOperationType::Minus
+                };
 
+                let right = parse_term(tokens)?;
+                let col_end = right.col_end;
+                Node {
+                    content: NumericExpression::BinaryOperation {
+                        left: Box::new(left),
+                        right: Box::new(right),
+                        operator,
+                    },
+                    col_start,
+                    col_end: col_end,
+                    line_num: token.line_num,
+                }
+            }
+            _ => {
+                let ret = Ok(left);
+                return ret;
+            }
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::Result;
-    use crate::parser::expressions::{parse_term};
+    use crate::parser::expressions::parse_term;
     use crate::tokenizer::{Token, tokenize};
+
+    #[test]
+    pub fn test_parse_term_multiply() -> Result<()> {
+        let lines = vec!["2 * 3".to_string()];
+        let tokens = tokenize(&lines)?;
+        let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> =
+            tokens.iter().peekable();
+        let x = parse_term(&mut iter_tokens);
+        println!("{:#?}", x);
+        Ok(())
+    }
 
     #[test]
     pub fn test_create_num_expr() -> Result<()> {
