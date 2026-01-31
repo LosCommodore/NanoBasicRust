@@ -14,19 +14,34 @@ fn read_factorial() -> Result<Vec<String>> {
     tokenizer::read_file(file)
 }
 
-fn main() {
-    println!("Starting program");
-    //read_factorial()
-    let txt = vec!["LET A = 2 + 3".to_string()];
-    let tokens = tokenize(&txt).expect("Failed to read");
+fn tokenize_and_parse(txt: &Vec<String>) -> Result<()> {
+   
+    let tokens = tokenize(&txt)?;
     
     println!("{:#?}", tokens);
     let mut iter_token = tokens.iter().peekable();
-    //let out = parse_expression(&mut iter_token).expect("parsing sucessful");
-    //statements::parse_expression;
-    let out = parser::parse_line(&mut iter_token).expect("parse error");
+
+    let out = parser::parse_line(&mut iter_token)?;
     println!("{:#?}", out);
     
     let file = File::create("output.json").expect("failed to create file");
-    serde_json::to_writer_pretty(&file,&out).unwrap();
+    serde_json::to_writer_pretty(&file,&out)?;
+    Ok(())
+}
+
+fn main() {
+    println!("Starting program");
+
+    // -- Read input
+    let txt: Vec<String> = vec!["10 LET A = 2 + 3*5 + B*10".to_string()];
+    
+    // -- main
+    let result = tokenize_and_parse(&txt);
+
+    // -- Error handling
+    if let Err(error) = result {
+        println!("{:?}", error);
+        std::process::exit(1);
+    }
+    
 }
