@@ -3,7 +3,9 @@ use super::statement_if::IfStatement;
 use super::statement_let::LetStatement;
 use crate::tokenizer::{Token, TokenType};
 use std::iter::Peekable;
+use serde::Serialize;
 
+#[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub enum StatementEnum {

@@ -2,7 +2,9 @@ use super::expressions::NumericExpression;
 use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
 use std::iter::Peekable;
+use serde::Serialize;
 
+#[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct LetStatement {

@@ -2,7 +2,9 @@
 use super::Statement;
 use super::expressions::BooleanExpression;
 //use crate::tokenizer::{Token, TokenType};
+use serde::Serialize;
 
+#[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct IfStatement {

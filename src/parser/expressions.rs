@@ -1,7 +1,9 @@
 use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
 use std::iter::Peekable;
+use serde::Serialize;
 
+#[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct BooleanExpression {
@@ -10,11 +12,13 @@ pub struct BooleanExpression {
     pub right_expr: Node<NumericExpression>,
 }
 
+#[derive(Serialize)]
 #[derive(Debug, PartialEq)]
 pub enum UnaryOperationType {
     Minus,
 }
 
+#[derive(Serialize)]
 #[derive(Debug, PartialEq)]
 pub enum BinaryOperationType {
     Plus,
@@ -23,6 +27,7 @@ pub enum BinaryOperationType {
     Devide,
 }
 
+#[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub enum NumericExpression {

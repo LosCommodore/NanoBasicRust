@@ -8,8 +8,12 @@ use crate::tokenizer::{Token, TokenType};
 use std::error::Error;
 use std::iter::Peekable;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
+use serde::Serialize;
+
 
 /// Represents command like "if", "let, "goto" ...
+
+#[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct Statement {
@@ -18,6 +22,7 @@ pub struct Statement {
 }
 
 /// Represents postion information in the code
+#[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct Node<T> {
@@ -38,7 +43,7 @@ impl<T> Node<T> {
     }
 }
 
-fn parse_line<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Statement>>
+pub fn parse_line<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Statement>>
 where
     I: Iterator<Item = &'a Token>,
 {
