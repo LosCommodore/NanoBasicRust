@@ -107,11 +107,43 @@ where
 /// Term :=
 /// FACTOR *|/ FACTOR *|/ FACTOR ...
 pub fn parse_term<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<NumericExpression>>
-where
-    I: Iterator<Item = &'a Token>,
+where I: Iterator<Item = &'a Token>,
 {
-    let _factor = parse_factor(tokens);
-    Err("not implemented".into())
+    let mut left = parse_factor(tokens)?;
+    loop {
+        let Some(&token) = tokens.peek() else {
+            return Ok(left);
+        };
+
+        left = match &token.kind {
+            t @ (TokenType::Multiply | TokenType::Divide) => {
+                _ = tokens.next().expect("Unexpected Error");
+                let col_start = left.col_start;
+                let operator = if *t == TokenType::Multiply {
+                    BinaryOperationType::Multiply
+                } else {
+                    BinaryOperationType::Devide
+                };
+
+                let right = parse_factor(tokens)?;
+                let col_end = right.col_end;
+                Node {
+                    content: NumericExpression::BinaryOperation {
+                        left: Box::new(left),
+                        right: Box::new(right),
+                        operator,
+                    },
+                    col_start,
+                    col_end: col_end,
+                    line_num: token.line_num,
+                }
+            }
+            _ => {
+                let ret = Ok(left);
+                return ret;
+            }
+        }
+    }
 }
 
 /// Expression :=
@@ -123,11 +155,14 @@ where
 {
     let mut left = parse_term(tokens)?;
     loop {
-        let Some(token) = tokens.next() else {
+        let Some(&token) = tokens.peek() else {
             return Ok(left);
         };
+
+        println!("{:?}",token.kind);
         left = match &token.kind {
             t @ (TokenType::Plus | TokenType::Minus) => {
+                _ = tokens.next().expect("Unexpected Error");
                 let col_start = left.col_start;
                 let operator = if *t == TokenType::Plus {
                     BinaryOperationType::Plus
@@ -159,7 +194,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Result;
-    use crate::parser::expressions::parse_term;
+    use crate::parser::expressions::{parse_expression, parse_term};
     use crate::tokenizer::{Token, tokenize};
 
     #[test]
@@ -177,12 +212,12 @@ mod tests {
     pub fn test_create_num_expr() -> Result<()> {
         let lines = vec!["2 + 3".to_string()];
         let tokens = tokenize(&lines)?;
-        // println!("tokens: \n{:#?}",tokens);
+        println!("tokens: \n{:#?}",tokens);
 
         let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> =
             tokens.iter().peekable();
 
-        let x = parse_term(&mut iter_tokens);
+        let x = parse_expression(&mut iter_tokens)?;
         println!("{:#?}", x);
         assert!(true);
         Ok(())
