@@ -3,23 +3,12 @@ pub mod statement_if;
 pub mod statement_let;
 pub mod statements;
 
-use crate::parser::statements::StatementEnum;
+use crate::parser::statements::Statement;
 use crate::tokenizer::{Token, TokenType};
 use std::error::Error;
 use std::iter::Peekable;
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 use serde::Serialize;
-
-
-/// Represents command like "if", "let, "goto" ...
-
-#[derive(Serialize)]
-#[allow(unused)]
-#[derive(Debug, PartialEq)]
-pub struct Statement {
-    line_id: usize,
-    kind: StatementEnum,
-}
 
 /// Represents postion information in the code
 #[derive(Serialize)]
@@ -43,7 +32,7 @@ impl<T> Node<T> {
     }
 }
 
-pub fn parse_line<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Statement>>
+pub fn parse_line<'a, I>(tokens: &mut Peekable<I>) -> Result<Statement>
 where
     I: Iterator<Item = &'a Token>,
 {
@@ -56,18 +45,7 @@ where
     println!("line line_id: {:?}", line_id);
     println!("line token: {:?}", line_token);
 
-    let kind = StatementEnum::from_token(tokens)?;
-
-    let statement = Statement { line_id, kind };
-
-    let node = Node {
-        line_num: line_token.line_num,
-        col_start: 1,
-        col_end: 1,
-        content: statement,
-    };
-
-    Ok(node)
+    Statement::new(tokens)
 }
 
 pub fn parse(tokens: &Vec<Token>) {

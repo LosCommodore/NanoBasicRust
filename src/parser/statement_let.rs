@@ -3,6 +3,7 @@ use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
 use std::iter::Peekable;
 use serde::Serialize;
+use super::expressions::parse_expression;
 
 #[derive(Serialize)]
 #[allow(unused)]
@@ -13,19 +14,23 @@ pub struct LetStatement {
 }
 
 impl LetStatement {
-    pub fn create<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
+    pub fn create<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Self>>
     where
         I: Iterator<Item = &'a Token>,
     {
+        // - Variable
         let mut token = tokens
             .next()
             .ok_or("Syntax error: unexpected end of line")?;
+
+        let col_start = token.col_start;
 
         println!("{:?}", &token);
         let TokenType::Variable(var_name) = &token.kind else {
             return Err("Syntax Error: expected variable ".into());
         };
 
+        // Token Equal
         token = tokens
             .next()
             .ok_or("Syntax error: unexpected end of line")?;
@@ -33,19 +38,13 @@ impl LetStatement {
         let TokenType::Equal = &token.kind else {
             return Err("Syntax Error: expected variable ".into());
         };
-
+        
         // create numeric Expression here
-        let expression = Node {
-            line_num: token.line_num,
-            col_start: token.col_start,
-            col_end: 4,
-            content: NumericExpression::NumberLiteral(42),
-        };
-
-        Ok(LetStatement {
-            name: var_name.clone(),
-            expression,
-        })
+        let expression = parse_expression(tokens)?;
+        let col_end =  expression.col_end;
+        let content = LetStatement{name: var_name.clone(), expression};
+        let node = Node { content, line_num: token.line_num, col_start, col_end};
+        Ok(node)
     }
 }
 
