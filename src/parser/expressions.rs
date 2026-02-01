@@ -1,25 +1,23 @@
 use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
-use std::iter::Peekable;
 use serde::Serialize;
+use std::iter::Peekable;
 
 #[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct BooleanExpression {
     pub operator: TokenType,
-    pub left_expr: Node<NumericExpression>,
-    pub right_expr: Node<NumericExpression>,
+    pub left_expr: Node<Expression>,
+    pub right_expr: Node<Expression>,
 }
 
-#[derive(Serialize)]
-#[derive(Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq)]
 pub enum UnaryOperationType {
     Minus,
 }
 
-#[derive(Serialize)]
-#[derive(Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq)]
 pub enum BinaryOperationType {
     Plus,
     Minus,
@@ -27,19 +25,20 @@ pub enum BinaryOperationType {
     Devide,
 }
 
-#[derive(Serialize)]
-#[derive(Debug, PartialEq)]
-pub enum NumericExpression {
+
+/// Expression: evaluates to a single numericic value (=> NumericExpression in Pyhton code)
+#[derive(Serialize, Debug, PartialEq)]
+pub enum Expression {
     /// A numeric expression with two operands like 2 + 2 or 8 / 4
     BinaryOperation {
-        left: Box<Node<NumericExpression>>,
-        right: Box<Node<NumericExpression>>,
+        left: Box<Node<Expression>>,
+        right: Box<Node<Expression>>,
         operator: BinaryOperationType,
     },
 
     /// A numeric expression with one operand, like -4
     UnaryOperation {
-        expression: Box<Node<NumericExpression>>,
+        expression: Box<Node<Expression>>,
         operator: UnaryOperationType,
     },
 
@@ -52,7 +51,7 @@ pub enum NumericExpression {
 
 /// FACTOR :=
 /// Variable | Number | (Expression) | -FACTOR
-pub fn parse_factor<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<NumericExpression>>
+pub fn parse_factor<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Expression>>
 where
     I: Iterator<Item = &'a Token>,
 {
@@ -61,22 +60,24 @@ where
         .ok_or("Syntax error: unexpected end of line")?;
 
     let token = first_token;
-    let this_node: Node<NumericExpression> = match &token.kind {
+    let this_node: Node<Expression> = match &token.kind {
         TokenType::Variable(var) => {
-            let content = NumericExpression::VarRetrieve(var.clone());
+            let content = Expression::VarRetrieve(var.clone());
             Node::new(first_token, content)
         }
 
         TokenType::Number(num) => {
-            let content = NumericExpression::NumberLiteral(*num);
+            let content = Expression::NumberLiteral(*num);
             Node::new(first_token, content)
         }
 
         TokenType::OpenParen => {
-            let inner_node: Node<NumericExpression> = parse_expression(tokens)?;
+            let inner_node: Node<Expression> = parse_expression(tokens)?;
 
-            let token = tokens.next().ok_or("Syntax error: unexpected end of line. Expected ')'")?;
-        
+            let token = tokens
+                .next()
+                .ok_or("Syntax error: unexpected end of line. Expected ')'")?;
+
             let TokenType::CloseParen = token.kind else {
                 return Err("Invalid Token. Expected ')'".into());
             };
@@ -92,7 +93,7 @@ where
         TokenType::Minus => {
             let factor = parse_factor(tokens)?;
             let col_end = factor.col_end;
-            let content = NumericExpression::UnaryOperation {
+            let content = Expression::UnaryOperation {
                 expression: Box::new(factor),
                 operator: UnaryOperationType::Minus,
             };
@@ -112,8 +113,9 @@ where
 
 /// Term :=
 /// FACTOR *|/ FACTOR *|/ FACTOR ...
-pub fn parse_term<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<NumericExpression>>
-where I: Iterator<Item = &'a Token>,
+pub fn parse_term<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Expression>>
+where
+    I: Iterator<Item = &'a Token>,
 {
     let mut left = parse_factor(tokens)?;
     loop {
@@ -134,7 +136,7 @@ where I: Iterator<Item = &'a Token>,
                 let right = parse_factor(tokens)?;
                 let col_end = right.col_end;
                 Node {
-                    content: NumericExpression::BinaryOperation {
+                    content: Expression::BinaryOperation {
                         left: Box::new(left),
                         right: Box::new(right),
                         operator,
@@ -155,7 +157,7 @@ where I: Iterator<Item = &'a Token>,
 /// Expression :=
 /// TERM +|- TERM +|- TERM ...
 /// a term in this context is a chain of one or more factors
-pub fn parse_expression<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<NumericExpression>>
+pub fn parse_expression<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Expression>>
 where
     I: Iterator<Item = &'a Token>,
 {
@@ -165,7 +167,7 @@ where
             return Ok(left);
         };
 
-        println!("{:?}",token.kind);
+        println!("{:?}", token.kind);
         left = match &token.kind {
             t @ (TokenType::Plus | TokenType::Minus) => {
                 _ = tokens.next().expect("Unexpected Error");
@@ -179,7 +181,7 @@ where
                 let right = parse_term(tokens)?;
                 let col_end = right.col_end;
                 Node {
-                    content: NumericExpression::BinaryOperation {
+                    content: Expression::BinaryOperation {
                         left: Box::new(left),
                         right: Box::new(right),
                         operator,
@@ -218,7 +220,7 @@ mod tests {
     pub fn test_create_num_expr() -> Result<()> {
         let lines = vec!["2 + 3".to_string()];
         let tokens = tokenize(&lines)?;
-        println!("tokens: \n{:#?}",tokens);
+        println!("tokens: \n{:#?}", tokens);
 
         let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> =
             tokens.iter().peekable();

@@ -11,9 +11,7 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 use serde::Serialize;
 
 /// Represents postion information in the code
-#[derive(Serialize)]
-#[allow(unused)]
-#[derive(Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq)]
 pub struct Node<T> {
     line_num: usize, // line number (in text editor)
     col_start: usize,
@@ -32,26 +30,48 @@ impl<T> Node<T> {
     }
 }
 
-pub fn parse_line<'a, I>(tokens: &mut Peekable<I>) -> Result<Statement>
-where
-    I: Iterator<Item = &'a Token>,
-{
-    let line_token = tokens.next().expect("Token not found");
-
-    let TokenType::Number(line_id) = line_token.kind else {
-        return Err("Parse error".into());
-    };
-
-    println!("line line_id: {:?}", line_id);
-    println!("line token: {:?}", line_token);
-
-    Statement::new(tokens)
+#[derive(Serialize, Debug, PartialEq)]
+pub struct Line {
+    line_id: usize,
+    statement: Statement,
 }
 
-pub fn parse(tokens: &Vec<Token>) {
-    let mut iter_token = tokens.iter().peekable();
+impl Line {
+    /// Parse a line from tokens
+    /// 
+    /// Syntax Line:
+    /// <line>::= <number> <statement> "\n" | "REM" .* \n
+    /// 
+    /// - Comments are already excluded by the tokenizer
+    pub fn parse<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
+    where
+        I: Iterator<Item = &'a Token>,
+    {
+        let line_token = tokens.next().expect("Token not found");
 
-    while let Some(_t) = iter_token.peek() {
-        parse_line(&mut iter_token).expect("error while parsing line");
+        let TokenType::Number(line_id) = line_token.kind else {
+            return Err("Expected line number".into());
+        };
+
+        let statement = Statement::parse(tokens)?;
+        Ok(Line { statement, line_id })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Line, Result};
+    use crate::tokenizer::tokenize;
+    #[test]
+    fn test_somehting() -> Result<()> {
+        // -- Read input
+        let txt: Vec<String> = vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()];
+        let tokens = tokenize(&txt)?;
+
+        println!("{:#?}", tokens);
+        let mut iter_token = tokens.iter().peekable();
+
+        let _result = Line::parse(&mut iter_token);
+        Ok(())
     }
 }

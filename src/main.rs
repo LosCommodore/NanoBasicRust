@@ -21,7 +21,7 @@ fn tokenize_and_parse(txt: &Vec<String>) -> Result<()> {
     println!("{:#?}", tokens);
     let mut iter_token = tokens.iter().peekable();
 
-    let out = parser::parse_line(&mut iter_token)?;
+    let out = parser::Line::parse(&mut iter_token)?;
     println!("{:#?}", out);
     
     let file = File::create("output.json").expect("failed to create file");
@@ -36,7 +36,7 @@ fn main() {
     let txt: Vec<String> = vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()];
     
     // -- main
-    let result = tokenize_and_parse(&txt);
+    let result: std::result::Result<(), Box<dyn Error>> = tokenize_and_parse(&txt);
 
     // -- Error handling
     if let Err(error) = result {

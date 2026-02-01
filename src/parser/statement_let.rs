@@ -1,16 +1,16 @@
-use super::expressions::NumericExpression;
+use super::expressions::Expression;
+use super::expressions::parse_expression;
 use super::{Node, Result};
 use crate::tokenizer::{Token, TokenType};
-use std::iter::Peekable;
 use serde::Serialize;
-use super::expressions::parse_expression;
+use std::iter::Peekable;
 
 #[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct LetStatement {
     name: String,
-    expression: Node<NumericExpression>,
+    expression: Node<Expression>,
 }
 
 impl LetStatement {
@@ -38,12 +38,20 @@ impl LetStatement {
         let TokenType::Equal = &token.kind else {
             return Err("Syntax Error: expected variable ".into());
         };
-        
+
         // create numeric Expression here
         let expression = parse_expression(tokens)?;
-        let col_end =  expression.col_end;
-        let content = LetStatement{name: var_name.clone(), expression};
-        let node = Node { content, line_num: token.line_num, col_start, col_end};
+        let col_end = expression.col_end;
+        let content = LetStatement {
+            name: var_name.clone(),
+            expression,
+        };
+        let node = Node {
+            content,
+            line_num: token.line_num,
+            col_start,
+            col_end,
+        };
         Ok(node)
     }
 }

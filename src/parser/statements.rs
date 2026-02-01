@@ -1,27 +1,40 @@
+use super::Node;
 use super::Result;
 use super::statement_if::IfStatement;
 use super::statement_let::LetStatement;
+use crate::parser::expressions::parse_expression;
 use crate::tokenizer::{Token, TokenType};
-use std::iter::Peekable;
-use super::Node;
 use serde::Serialize;
+use std::iter::Peekable;
+use super::expressions::Expression;
 
+/// <statement> ::= 
+///    'PRINT' <expr-list>
+///  | 'IF'    <boolean-expr> 'THEN' <statement>
+///  | 'GOTO'  <expression>
+///  | 'LET'   <var> = <expression>
+///  | 'GOSUB' <expression>
+///  | 'RETURN' 
+/// 
 #[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub enum Statement {
-    Print,
-    Return,
+    Print(Box<Vec<Expression>>),
     If(Box<Node<IfStatement>>),
-    GoSub,
-    GoTo,
+    GoSub(Box<Node<Expression>>),
+    GoTo(Box<Node<Expression>>),
     Let(Box<Node<LetStatement>>),
+    Return,
 }
 
 use Statement::*;
 
 impl Statement {
-    pub fn new<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
+    /// Parse statement from tokens
+    /// 
+
+    pub fn parse<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
     where
         I: Iterator<Item = &'a Token>,
     {
@@ -31,9 +44,9 @@ impl Statement {
             //TokenType::Print => Statement::Print,
             //TokenType::If => parse_if_statement(tokens)?,
             TokenType::Let => Let(Box::new(LetStatement::create(tokens)?)),
-            //TokenType::Goto => Statement::GoTo,
-            //TokenType::Gosub => Statement::GoSub,
-            //TokenType::Return => Statement::Return,
+            TokenType::Goto => Statement::GoTo(Box::new(parse_expression(tokens)?)),
+            TokenType::Gosub => Statement::GoSub(Box::new(parse_expression(tokens)?)),
+            TokenType::Return => Statement::Return,
             _ => return Err("error".into()),
         };
         Ok(statement)

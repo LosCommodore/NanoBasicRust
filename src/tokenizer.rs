@@ -1,14 +1,13 @@
 use once_cell::sync::Lazy;
 use regex::Regex;
+use serde::Serialize;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use serde::Serialize;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
-#[derive(Serialize)]
-#[derive(Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq)]
 pub enum TokenType {
     Comment,
     Whitespace,
