@@ -28,7 +28,6 @@ pub enum BinaryOperationType {
 }
 
 #[derive(Serialize)]
-#[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub enum NumericExpression {
     /// A numeric expression with two operands like 2 + 2 or 8 / 4
@@ -76,6 +75,8 @@ where
         TokenType::OpenParen => {
             let inner_node: Node<NumericExpression> = parse_expression(tokens)?;
 
+            let token = tokens.next().ok_or("Syntax error: unexpected end of line. Expected ')'")?;
+        
             let TokenType::CloseParen = token.kind else {
                 return Err("Invalid Token. Expected ')'".into());
             };

@@ -33,7 +33,7 @@ fn main() {
     println!("Starting program");
 
     // -- Read input
-    let txt: Vec<String> = vec!["10 LET A = 2 + 3*5 + B*10".to_string()];
+    let txt: Vec<String> = vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()];
     
     // -- main
     let result = tokenize_and_parse(&txt);
