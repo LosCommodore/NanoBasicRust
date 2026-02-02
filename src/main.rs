@@ -1,17 +1,17 @@
 pub mod parser;
 pub mod tokenizer;
 use tokenizer::tokenize;
-use std::error::Error;
-type Result<T> = std::result::Result<T, Box<dyn Error>>;
 use std::fs::File;
-
+use anyhow::{Result, anyhow};
+use std::env;
 
 #[allow(dead_code)]
 fn read_factorial() -> Result<Vec<String>> {
     let file =
         r"C:\Proj\cs_from_scatch\ComputerScienceFromScratch\NanoBASIC\Examples\factorial.bas";
 
-    tokenizer::read_file(file)
+    let file = tokenizer::read_file(file)?;
+    Ok(file)
 }
 
 fn tokenize_and_parse(txt: &Vec<String>) -> Result<()> {
@@ -29,19 +29,23 @@ fn tokenize_and_parse(txt: &Vec<String>) -> Result<()> {
     Ok(())
 }
 
-fn main() {
+fn main() -> Result<()> {
+    //color_backtrace::install();
+
     println!("Starting program");
+    let env_name = "RUST_BACKTRACE".to_string();
+    if let Ok(value) = env::var(env_name) {
+        println!("env_name = {}", value);
+    } else {
+        println!("env_name not found!");
+
+    }
 
     // -- Read input
     let txt: Vec<String> = vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()];
     
     // -- main
-    let result: std::result::Result<(), Box<dyn Error>> = tokenize_and_parse(&txt);
+    tokenize_and_parse(&txt)?;
 
-    // -- Error handling
-    if let Err(error) = result {
-        println!("{:?}", error);
-        std::process::exit(1);
-    }
-    
+    Ok(())
 }

@@ -1,5 +1,4 @@
 use super::Node;
-use super::Result;
 use super::statement_if::IfStatement;
 use super::statement_let::LetStatement;
 use crate::parser::expressions::parse_expression;
@@ -7,6 +6,7 @@ use crate::tokenizer::{Token, TokenType};
 use serde::Serialize;
 use std::iter::Peekable;
 use super::expressions::Expression;
+use anyhow::{Result,anyhow};
 
 /// <statement> ::= 
 ///    'PRINT' <expr-list>
@@ -47,7 +47,7 @@ impl Statement {
             TokenType::Goto => Statement::GoTo(Box::new(parse_expression(tokens)?)),
             TokenType::Gosub => Statement::GoSub(Box::new(parse_expression(tokens)?)),
             TokenType::Return => Statement::Return,
-            _ => return Err("error".into()),
+            _ => return Err(anyhow!("error")),
         };
         Ok(statement)
     }

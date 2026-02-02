@@ -1,9 +1,11 @@
 use super::expressions::Expression;
 use super::expressions::parse_expression;
-use super::{Node, Result};
+use super::{Node};
 use crate::tokenizer::{Token, TokenType};
 use serde::Serialize;
 use std::iter::Peekable;
+use anyhow::{Result,anyhow};
+
 
 #[derive(Serialize)]
 #[allow(unused)]
@@ -21,22 +23,22 @@ impl LetStatement {
         // - Variable
         let mut token = tokens
             .next()
-            .ok_or("Syntax error: unexpected end of line")?;
+            .ok_or(anyhow!("Syntax error: unexpected end of line"))?;
 
         let col_start = token.col_start;
 
         println!("{:?}", &token);
         let TokenType::Variable(var_name) = &token.kind else {
-            return Err("Syntax Error: expected variable ".into());
+            return Err(anyhow!("Syntax Error: expected variable "));
         };
 
         // Token Equal
         token = tokens
             .next()
-            .ok_or("Syntax error: unexpected end of line")?;
+            .ok_or(anyhow!("Syntax error: unexpected end of line"))?;
 
         let TokenType::Equal = &token.kind else {
-            return Err("Syntax Error: expected variable ".into());
+            return Err(anyhow!("Syntax Error: expected variable"));
         };
 
         // create numeric Expression here

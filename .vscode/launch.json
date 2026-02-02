@@ -1,15 +1,19 @@
 {
     "version": "0.2.0",
+    "$schema": "vscode://schemas/launch",
     "configurations": [
         {
             "name": "Debug Rust (MSVC)",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}\\target\\debug\\cs_rust.exe",
-            "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
-            "preLaunchTask": "rust: cargo build"
+            "preLaunchTask": "rust: cargo build",
+            "env": {
+                "RUST_BACKTRACE": "1",
+                "RUST_BACKTRACE_COLOR": "always"
+            }
         }
     ]
 }

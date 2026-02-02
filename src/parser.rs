@@ -5,10 +5,10 @@ pub mod statements;
 
 use crate::parser::statements::Statement;
 use crate::tokenizer::{Token, TokenType};
-use std::error::Error;
 use std::iter::Peekable;
-type Result<T> = std::result::Result<T, Box<dyn Error>>;
 use serde::Serialize;
+use anyhow::{Result,anyhow};
+
 
 /// Represents postion information in the code
 #[derive(Serialize, Debug, PartialEq)]
@@ -50,7 +50,7 @@ impl Line {
         let line_token = tokens.next().expect("Token not found");
 
         let TokenType::Number(line_id) = line_token.kind else {
-            return Err("Expected line number".into());
+            return Err(anyhow!("Expected line number"))
         };
 
         let statement = Statement::parse(tokens)?;

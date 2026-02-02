@@ -1,11 +1,9 @@
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::Serialize;
-use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-
-type Result<T> = std::result::Result<T, Box<dyn Error>>;
+use anyhow::{Result,anyhow};
 
 #[derive(Serialize, Debug, PartialEq)]
 pub enum TokenType {
@@ -112,7 +110,7 @@ fn match_token(text: &str, col_start: usize) -> Result<Token> {
         .iter()
         .find_map(|case| find_token(case, text, col_start));
 
-    let token = token.ok_or("Syntax Error".into());
+    let token = token.ok_or(anyhow!("Syntax Error"));
     token
 }
 

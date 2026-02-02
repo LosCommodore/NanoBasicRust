@@ -1,7 +1,8 @@
-use super::{Node, Result};
+use super::{Node };
 use crate::tokenizer::{Token, TokenType};
 use serde::Serialize;
 use std::iter::Peekable;
+use anyhow::{Result,anyhow};
 
 #[derive(Serialize)]
 #[allow(unused)]
@@ -57,7 +58,7 @@ where
 {
     let first_token = tokens
         .next()
-        .ok_or("Syntax error: unexpected end of line")?;
+        .ok_or(anyhow!("Syntax error: unexpected end of line"))?;
 
     let token = first_token;
     let this_node: Node<Expression> = match &token.kind {
@@ -76,10 +77,10 @@ where
 
             let token = tokens
                 .next()
-                .ok_or("Syntax error: unexpected end of line. Expected ')'")?;
+                .ok_or(anyhow!("Syntax error: unexpected end of line. Expected ')'"))?;
 
             let TokenType::CloseParen = token.kind else {
-                return Err("Invalid Token. Expected ')'".into());
+                return Err(anyhow!("Invalid Token. Expected "))
             };
 
             Node {
@@ -105,7 +106,7 @@ where
                 col_end,
             }
         }
-        _ => return Err("Unexpected token in numeric expression.".into()),
+        _ => return Err(anyhow!("Unexpected token in numeric expression.")),
     };
 
     Ok(this_node)
