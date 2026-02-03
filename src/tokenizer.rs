@@ -1,9 +1,9 @@
+use anyhow::{Result, anyhow};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::Serialize;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use anyhow::{Result,anyhow};
 
 #[derive(Serialize, Debug, PartialEq)]
 pub enum TokenType {

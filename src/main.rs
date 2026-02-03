@@ -1,9 +1,9 @@
 pub mod parser;
 pub mod tokenizer;
-use tokenizer::tokenize;
-use std::fs::File;
-use anyhow::{Result, anyhow};
+use anyhow::Result;
 use std::env;
+use std::fs::File;
+use tokenizer::tokenize;
 
 #[allow(dead_code)]
 fn read_factorial() -> Result<Vec<String>> {
@@ -15,17 +15,16 @@ fn read_factorial() -> Result<Vec<String>> {
 }
 
 fn tokenize_and_parse(txt: &Vec<String>) -> Result<()> {
-   
     let tokens = tokenize(&txt)?;
-    
+
     println!("{:#?}", tokens);
     let mut iter_token = tokens.iter().peekable();
 
     let out = parser::Line::parse(&mut iter_token)?;
     println!("{:#?}", out);
-    
+
     let file = File::create("output.json").expect("failed to create file");
-    serde_json::to_writer_pretty(&file,&out)?;
+    serde_json::to_writer_pretty(&file, &out)?;
     Ok(())
 }
 
@@ -38,12 +37,11 @@ fn main() -> Result<()> {
         println!("env_name = {}", value);
     } else {
         println!("env_name not found!");
-
     }
 
     // -- Read input
     let txt: Vec<String> = vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()];
-    
+
     // -- main
     tokenize_and_parse(&txt)?;
 

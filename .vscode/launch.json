@@ -9,11 +9,7 @@
             "program": "${workspaceFolder}\\target\\debug\\cs_rust.exe",
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
-            "preLaunchTask": "rust: cargo build",
-            "env": {
-                "RUST_BACKTRACE": "1",
-                "RUST_BACKTRACE_COLOR": "always"
-            }
+            "preLaunchTask": "rust: cargo build"
         }
     ]
 }

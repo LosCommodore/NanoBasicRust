@@ -1,8 +1,8 @@
-use super::{Node };
+use super::Node;
 use crate::tokenizer::{Token, TokenType};
+use anyhow::{Result, anyhow};
 use serde::Serialize;
 use std::iter::Peekable;
-use anyhow::{Result,anyhow};
 
 #[derive(Serialize)]
 #[allow(unused)]
@@ -25,7 +25,6 @@ pub enum BinaryOperationType {
     Multiply,
     Devide,
 }
-
 
 /// Expression: evaluates to a single numericic value (=> NumericExpression in Pyhton code)
 #[derive(Serialize, Debug, PartialEq)]
@@ -75,12 +74,12 @@ where
         TokenType::OpenParen => {
             let inner_node: Node<Expression> = parse_expression(tokens)?;
 
-            let token = tokens
-                .next()
-                .ok_or(anyhow!("Syntax error: unexpected end of line. Expected ')'"))?;
+            let token = tokens.next().ok_or(anyhow!(
+                "Syntax error: unexpected end of line. Expected ')'"
+            ))?;
 
             let TokenType::CloseParen = token.kind else {
-                return Err(anyhow!("Invalid Token. Expected "))
+                return Err(anyhow!("Invalid Token. Expected "));
             };
 
             Node {

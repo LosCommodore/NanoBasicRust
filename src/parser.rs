@@ -5,10 +5,9 @@ pub mod statements;
 
 use crate::parser::statements::Statement;
 use crate::tokenizer::{Token, TokenType};
-use std::iter::Peekable;
+use anyhow::{Result, anyhow, bail};
 use serde::Serialize;
-use anyhow::{Result,anyhow};
-
+use std::iter::Peekable;
 
 /// Represents postion information in the code
 #[derive(Serialize, Debug, PartialEq)]
@@ -30,27 +29,26 @@ impl<T> Node<T> {
     }
 }
 
+/// Syntax Line:
+/// <line>::= <number> <statement> "\n" | "REM" .* \n
+///
+/// - Comments are already excluded by the tokenizer
 #[derive(Serialize, Debug, PartialEq)]
 pub struct Line {
     line_id: usize,
     statement: Statement,
 }
 
+/// Parse a line from tokens
 impl Line {
-    /// Parse a line from tokens
-    /// 
-    /// Syntax Line:
-    /// <line>::= <number> <statement> "\n" | "REM" .* \n
-    /// 
-    /// - Comments are already excluded by the tokenizer
     pub fn parse<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
     where
         I: Iterator<Item = &'a Token>,
     {
-        let line_token = tokens.next().expect("Token not found");
+        let line_token = tokens.next().ok_or(anyhow!("Token not found"))?;
 
         let TokenType::Number(line_id) = line_token.kind else {
-            return Err(anyhow!("Expected line number"))
+            bail!("Expected line number")
         };
 
         let statement = Statement::parse(tokens)?;
@@ -63,15 +61,25 @@ mod tests {
     use super::{Line, Result};
     use crate::tokenizer::tokenize;
     #[test]
-    fn test_somehting() -> Result<()> {
+    fn test_lines() -> Result<()> {
         // -- Read input
-        let txt: Vec<String> = vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()];
-        let tokens = tokenize(&txt)?;
+        let lines = [
+            vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()],
+            vec!["20 GOTO 20+B".to_string()],
+            vec!["30 GOTOSUB 40".to_string()],
+            ];
 
-        println!("{:#?}", tokens);
-        let mut iter_token = tokens.iter().peekable();
+        for line in &lines {
+            println!("{:#?}", line);
+            
+            println!("* Tokenizing");
+            let tokens = tokenize(&line)?;
 
-        let _result = Line::parse(&mut iter_token);
+            println!("* Parsing");
+            let mut iter_token = tokens.iter().peekable();
+            let result = Line::parse(&mut iter_token);
+            println!("{:?}",result);
+        }
         Ok(())
     }
 }

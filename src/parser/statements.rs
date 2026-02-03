@@ -1,21 +1,21 @@
 use super::Node;
+use super::expressions::Expression;
 use super::statement_if::IfStatement;
 use super::statement_let::LetStatement;
 use crate::parser::expressions::parse_expression;
 use crate::tokenizer::{Token, TokenType};
+use anyhow::{Result, anyhow};
 use serde::Serialize;
 use std::iter::Peekable;
-use super::expressions::Expression;
-use anyhow::{Result,anyhow};
 
-/// <statement> ::= 
+/// <statement> ::=
 ///    'PRINT' <expr-list>
 ///  | 'IF'    <boolean-expr> 'THEN' <statement>
 ///  | 'GOTO'  <expression>
 ///  | 'LET'   <var> = <expression>
 ///  | 'GOSUB' <expression>
-///  | 'RETURN' 
-/// 
+///  | 'RETURN'
+///
 #[derive(Serialize)]
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
@@ -32,8 +32,6 @@ use Statement::*;
 
 impl Statement {
     /// Parse statement from tokens
-    /// 
-
     pub fn parse<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
     where
         I: Iterator<Item = &'a Token>,
