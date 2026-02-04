@@ -8,38 +8,59 @@ use std::iter::Peekable;
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct BooleanExpression {
-    pub operator: TokenType,
+    pub operator: RelationalOperator,
     pub left_expr: Node<Expression>,
     pub right_expr: Node<Expression>,
 }
 
 #[derive(Serialize, Debug, PartialEq)]
-pub enum UnaryOperationType {
-    Minus,
-}
-
-#[derive(Serialize, Debug, PartialEq)]
-pub enum BinaryOperationType {
+pub enum BinaryOperator {
     Plus,
     Minus,
     Multiply,
     Devide,
 }
 
+/// Relationaloparator ::= <relop>
+#[derive(Serialize, Debug, PartialEq)]
+pub enum RelationalOperator {
+    Equal,
+    NotEqual,
+    LessEqual,
+    GreaterEqual,
+    Less,
+    Greater,
+}
+
+#[derive(Serialize, Debug, PartialEq)]
+pub struct BinaryOperation {
+    left: Node<Expression>,
+    right: Node<Expression>,
+    operator: BinaryOperator,
+}
+
+#[allow(unused)]
+pub struct BooleanOperation {
+    left: Node<Expression>,
+    right: Node<Expression>,
+    operator: RelationalOperator,
+}
+
+#[derive(Serialize, Debug, PartialEq)]
+pub enum UnaryOperator {
+    Minus,
+}
+
 /// Expression: evaluates to a single numericic value (=> NumericExpression in Pyhton code)
 #[derive(Serialize, Debug, PartialEq)]
 pub enum Expression {
     /// A numeric expression with two operands like 2 + 2 or 8 / 4
-    BinaryOperation {
-        left: Box<Node<Expression>>,
-        right: Box<Node<Expression>>,
-        operator: BinaryOperationType,
-    },
+    BinaryOperation(Box<BinaryOperation>),
 
     /// A numeric expression with one operand, like -4
     UnaryOperation {
         expression: Box<Node<Expression>>,
-        operator: UnaryOperationType,
+        operator: UnaryOperator,
     },
 
     /// An integer written out in NanoBASIC code
@@ -95,7 +116,7 @@ where
             let col_end = factor.col_end;
             let content = Expression::UnaryOperation {
                 expression: Box::new(factor),
-                operator: UnaryOperationType::Minus,
+                operator: UnaryOperator::Minus,
             };
 
             Node {
@@ -117,37 +138,43 @@ pub fn parse_term<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Expression>>
 where
     I: Iterator<Item = &'a Token>,
 {
-    let mut left = parse_factor(tokens)?;
+    let mut left_node = parse_factor(tokens)?;
     loop {
         let Some(&token) = tokens.peek() else {
-            return Ok(left);
+            return Ok(left_node);
         };
 
-        left = match &token.kind {
+        left_node = match &token.kind {
             t @ (TokenType::Multiply | TokenType::Divide) => {
                 _ = tokens.next().expect("Unexpected Error");
-                let col_start = left.col_start;
+
+                let col_start = left_node.col_start;
                 let operator = if *t == TokenType::Multiply {
-                    BinaryOperationType::Multiply
+                    BinaryOperator::Multiply
                 } else {
-                    BinaryOperationType::Devide
+                    BinaryOperator::Devide
                 };
 
-                let right = parse_factor(tokens)?;
-                let col_end = right.col_end;
-                Node {
-                    content: Expression::BinaryOperation {
-                        left: Box::new(left),
-                        right: Box::new(right),
-                        operator,
-                    },
+                let right_node = parse_factor(tokens)?;
+                let col_end = right_node.col_end;
+
+                let binary_operation = BinaryOperation {
+                    left: left_node,
+                    right: right_node,
+                    operator,
+                };
+                let content = Expression::BinaryOperation(Box::new(binary_operation));
+
+                let new_node = Node {
+                    content,
                     col_start,
                     col_end: col_end,
                     line_num: token.line_num,
-                }
+                };
+                new_node
             }
             _ => {
-                let ret = Ok(left);
+                let ret = Ok(left_node);
                 return ret;
             }
         }
@@ -173,19 +200,21 @@ where
                 _ = tokens.next().expect("Unexpected Error");
                 let col_start = left.col_start;
                 let operator = if *t == TokenType::Plus {
-                    BinaryOperationType::Plus
+                    BinaryOperator::Plus
                 } else {
-                    BinaryOperationType::Minus
+                    BinaryOperator::Minus
                 };
 
                 let right = parse_term(tokens)?;
                 let col_end = right.col_end;
+                let binary_op = BinaryOperation {
+                    left,
+                    right,
+                    operator,
+                };
+                let content = Expression::BinaryOperation(Box::new(binary_op));
                 Node {
-                    content: Expression::BinaryOperation {
-                        left: Box::new(left),
-                        right: Box::new(right),
-                        operator,
-                    },
+                    content,
                     col_start,
                     col_end: col_end,
                     line_num: token.line_num,

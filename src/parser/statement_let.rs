@@ -15,7 +15,7 @@ pub struct LetStatement {
 }
 
 impl LetStatement {
-    pub fn create<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Self>>
+    pub fn parse<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Self>>
     where
         I: Iterator<Item = &'a Token>,
     {
@@ -81,7 +81,7 @@ mod tests {
 
         let mut iter_tokens: std::iter::Peekable<std::slice::Iter<'_, Token>> =
             tokens.iter().peekable();
-        let result = LetStatement::create(&mut iter_tokens);
+        let result = LetStatement::parse(&mut iter_tokens);
         println!("{:#?}", &result)
     }
 }
