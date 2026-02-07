@@ -1,33 +1,63 @@
 use super::Node;
 use super::super::expressions::Expression;
-use crate::tokenizer::Token;
+use crate::{parser::expressions::parse_expression, tokenizer::{Position, Token, TokenType}};
 use anyhow::Result;
 use serde::Serialize;
-use std::iter::Peekable;
+use std::{iter::Peekable};
+use anyhow::anyhow;
 
 
 #[derive(Serialize, Debug, PartialEq)]
-pub enum PrintItem {
+pub enum Printable {
     String(String),
-    ExpressionNode(Box<Node<Expression>>),
+    ExpressionNode(Box<Expression>),
 }
 
-pub type PrintStatement = Vec<PrintItem>;
-pub type PrintNode = Node<PrintStatement>;
+pub type Printables = Vec<Node<Printable>>;
 
-pub fn parse_print_node<'a, I>(_tokens: &mut Peekable<I>) -> Result<PrintNode>
+fn parse_printable<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Printable>>
 where
     I: Iterator<Item = &'a Token>,
 {
-    todo!();
+    let position: Position;
+    let token_preview =  tokens.peek().ok_or(anyhow!("Expected Printable"))?;
+    let content = match token_preview.kind {
+        TokenType::String(ref str) => {
+            let token = tokens.next().expect("Token was peeked, now not found");
+            position = token.position;
+            Printable::String(str.clone())
+        }
+        _ => {
+            let Node{content, position:pos} = parse_expression(tokens)?;
+            position = pos;
+            Printable::ExpressionNode(Box::new(content))
+        }
+    };
+    let node = Node{content, position};
+
+    Ok(node)
 }
 
-impl PrintItem {
-    #[allow(dead_code)]
-    fn parse<'a, I>(_tokens: &mut Peekable<I>) -> Result<Node<PrintItem>>
-    where
-        I: Iterator<Item = &'a Token>,
+
+pub fn parse_printables<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Printables>>
+where
+    I: Iterator<Item = &'a Token>,
+{
+    let mut printables =  Vec::new();
+    loop 
     {
-        todo!();
+        let printable: Node<Printable> = parse_printable(tokens)?;
+        printables.push(printable);
+
+        if let Some(Token{kind:TokenType::Comma, ..}) = tokens.peek()
+        { 
+            tokens.next();
+        } else {
+            let mut position = printables[0].position;
+            position.col_end = printables.last().unwrap().position.col_end;
+            let node = Node {content:printables, position};
+            return Ok(node) 
+        };
     }
 }
+

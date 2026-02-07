@@ -5,7 +5,7 @@ use super::Node;
 use super::expressions::Expression;
 use if_statement::IfStatement;
 use let_statment::LetStatement;
-use print_statment::{PrintNode, parse_print_node};
+use print_statment::{parse_printables, Printables};
 use crate::parser::expressions::parse_expression;
 use crate::tokenizer::Token;
 use crate::tokenizer::TokenType as TT;
@@ -23,7 +23,7 @@ use std::iter::Peekable;
 ///
 #[derive(Serialize, Debug, PartialEq)]
 pub enum Statement {
-    Print(Box<PrintNode>),
+    Print(Box<Node<Printables>>),
     If(Box<Node<IfStatement>>),
     GoSub(Box<Node<Expression>>),
     GoTo(Box<Node<Expression>>),
@@ -42,7 +42,7 @@ impl Statement {
         let token: &Token = tokens.next().ok_or(anyhow!("Token not found"))?;
 
         let statement = match token.kind {
-            TT::Print => Print(Box::new(parse_print_node(tokens)?)),
+            TT::Print => Print(Box::new(parse_printables(tokens)?)),
             TT::If => If(Box::new(IfStatement::parse_node(tokens)?)),
             TT::Let => Let(Box::new(LetStatement::parse(tokens)?)),
             TT::Goto => GoTo(Box::new(parse_expression(tokens)?)),
