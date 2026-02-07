@@ -82,30 +82,35 @@ impl IfStatement {
     where
         I: Iterator<Item = &'a Token>,
     {
-        let _boolean_expr_ = parse_boolean_expression(tokens)?;
-
-        /*
-        let statement = IfStatement {
-            boolean_expr,
-            then_statement: todo!(),
+        let boolean_expr = parse_boolean_expression(tokens)?;
+        let line_num = boolean_expr.line_num;
+        let col_start = boolean_expr.col_start;
+        let then_token =  tokens.next().ok_or(anyhow!("Expected Token"))?;
+        if then_token.kind != TokenType::Then {
+            bail!("Expected THEN Token, got {:?}", then_token.kind);
         };
-        */
-        todo!();
-        //Ok(statement)
+        let then_statement = Statement::parse(tokens)?;
+     
+        let content = IfStatement {
+            boolean_expr,
+            then_statement,
+        };
+        let node = Node{content, line_num, col_start, col_end: 0};
+        Ok(node)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{Result, parse_boolean_expression};
-    use crate::tokenizer::tokenize;
+    use crate::{parser::statement_if::IfStatement, tokenizer::tokenize};
 
     #[test]
     fn test_boolean_expression() -> Result<()> {
         // -- Read input
         let lines = [
             vec!["A=3".to_string()],
-            //vec!["42>34".to_string()],
+            vec!["42>34".to_string()],
         ];
 
         for line in &lines {
@@ -116,7 +121,29 @@ mod tests {
 
             println!("* Parsing");
             let mut iter_token = tokens.iter().peekable();
-            let result = parse_boolean_expression(&mut iter_token);
+            let result = parse_boolean_expression(&mut iter_token)?;
+            println!("{result:#?}");
+        }
+        Ok(())
+    }
+
+     #[test]
+      fn test_if() -> Result<()> {
+        // -- Read input
+        let lines = [
+            vec!["IF A=3 THEN GOTO 42".to_string()],
+        ];
+
+        for line in &lines {
+            println!("{:#?}", line);
+
+            println!("* Tokenizing");
+            let tokens = tokenize(&line)?;
+            
+            println!("* Parsing");
+            let mut iter_token = tokens.iter().peekable();
+            let _if_token = iter_token.next();
+            let result = IfStatement::parse_node(&mut iter_token)?;
             println!("{result:#?}");
         }
         Ok(())

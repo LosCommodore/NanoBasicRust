@@ -68,6 +68,7 @@ mod tests {
             vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()],
             vec!["20 GOTO 20+B".to_string()],
             vec!["30 GOTOSUB 40".to_string()],
+            vec!["40 IF B<>33 THEN GOTO 42".to_string()],
         ];
 
         for line in &lines {

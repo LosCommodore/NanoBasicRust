@@ -45,7 +45,7 @@ impl Statement {
             TT::Goto => GoTo(Box::new(parse_expression(tokens)?)),
             TT::Gosub => GoSub(Box::new(parse_expression(tokens)?)),
             TT::Return => Return,
-            _ => return Err(anyhow!("error")),
+            _ => return Err(anyhow!("Unknown Statement: '{:?}'",token.kind)),
         };
         Ok(statement)
     }
