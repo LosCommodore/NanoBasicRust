@@ -1,8 +1,11 @@
+pub mod if_statement;
+pub mod let_statment;
+pub mod print_statment;
 use super::Node;
 use super::expressions::Expression;
-use super::statement_if::IfStatement;
-use super::statement_let::LetStatement;
-use super::statement_print::{PrintNode, parse_print_node};
+use if_statement::IfStatement;
+use let_statment::LetStatement;
+use print_statment::{PrintNode, parse_print_node};
 use crate::parser::expressions::parse_expression;
 use crate::tokenizer::Token;
 use crate::tokenizer::TokenType as TT;

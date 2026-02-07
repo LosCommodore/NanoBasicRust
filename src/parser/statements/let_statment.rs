@@ -1,14 +1,12 @@
 use super::Node;
-use super::expressions::Expression;
-use super::expressions::parse_expression;
+use crate::parser::expressions::{Expression, parse_expression};
 use crate::tokenizer::{Token, TokenType};
 use anyhow::{Result, anyhow};
 use serde::Serialize;
 use std::iter::Peekable;
 
-#[derive(Serialize)]
-#[allow(unused)]
-#[derive(Debug, PartialEq)]
+
+#[derive(Serialize, Debug, PartialEq)]
 pub struct LetStatement {
     name: String,
     expression: Node<Expression>,
@@ -54,7 +52,7 @@ impl LetStatement {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::statement_let::LetStatement;
+    use super::LetStatement;
     use crate::tokenizer::{Position, Token, TokenType};
 
     fn dummy_token(tk: TokenType) -> Token {

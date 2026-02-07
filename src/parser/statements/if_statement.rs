@@ -101,7 +101,8 @@ impl IfStatement {
 #[cfg(test)]
 mod tests {
     use super::{Result, parse_boolean_expression};
-    use crate::{parser::statement_if::IfStatement, tokenizer::tokenize};
+    use super::IfStatement;
+    use crate::tokenizer::tokenize;
 
     #[test]
     fn test_boolean_expression() -> Result<()> {
@@ -135,7 +136,7 @@ mod tests {
 
             println!("* Parsing");
             let mut iter_token = tokens.iter().peekable();
-            let _if_token = iter_token.next();
+            let _if_token: Option<&crate::tokenizer::Token> = iter_token.next();
             let result = IfStatement::parse_node(&mut iter_token)?;
             println!("{result:#?}");
         }

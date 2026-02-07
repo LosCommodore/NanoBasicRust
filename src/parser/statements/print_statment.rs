@@ -1,14 +1,12 @@
 use super::Node;
-use super::expressions::Expression;
+use super::super::expressions::Expression;
 use crate::tokenizer::Token;
 use anyhow::Result;
 use serde::Serialize;
 use std::iter::Peekable;
 
-#[allow(dead_code)]
-#[derive(Serialize)]
-#[allow(unused)]
-#[derive(Debug, PartialEq)]
+
+#[derive(Serialize, Debug, PartialEq)]
 pub enum PrintItem {
     String(String),
     ExpressionNode(Box<Node<Expression>>),
@@ -16,8 +14,6 @@ pub enum PrintItem {
 
 pub type PrintStatement = Vec<PrintItem>;
 pub type PrintNode = Node<PrintStatement>;
-
-#[allow(dead_code)]
 
 pub fn parse_print_node<'a, I>(_tokens: &mut Peekable<I>) -> Result<PrintNode>
 where
