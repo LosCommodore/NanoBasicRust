@@ -5,7 +5,7 @@ pub mod statement_print;
 pub mod statements;
 
 use crate::parser::statements::Statement;
-use crate::tokenizer::{Token, TokenType};
+use crate::tokenizer::{Position, Token, TokenType};
 use anyhow::{Result, anyhow, bail};
 use serde::Serialize;
 use std::iter::Peekable;
@@ -13,19 +13,15 @@ use std::iter::Peekable;
 /// Represents postion information in the code
 #[derive(Serialize, Debug, PartialEq)]
 pub struct Node<T> {
-    line_num: usize, // line number (in text editor)
-    col_start: usize,
-    col_end: usize,
+    position: Position, // line number (in text editor)
     content: T,
 }
 
 impl<T> Node<T> {
     fn new(token: &Token, content: T) -> Self {
         Node {
-            col_start: token.col_start,
-            line_num: token.line_num,
-            col_end: token.col_end,
             content,
+            position: token.position,
         }
     }
 }

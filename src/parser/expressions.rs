@@ -1,5 +1,5 @@
 use super::Node;
-use crate::tokenizer::{Token, TokenType};
+use crate::tokenizer::{Position, Token, TokenType};
 use anyhow::{Result, anyhow};
 use serde::Serialize;
 use std::iter::Peekable;
@@ -78,15 +78,13 @@ where
 
             Node {
                 content: inner_node.content,
-                line_num: first_token.line_num,
-                col_start: first_token.col_start,
-                col_end: inner_node.col_end,
+                position: Position{col_end: inner_node.position.col_end, ..first_token.position}    
             }
         }
 
         TokenType::Minus => {
             let factor = parse_factor(tokens)?;
-            let col_end = factor.col_end;
+            let col_end = factor.position.col_end;
             let content = Expression::UnaryOperation {
                 expression: Box::new(factor),
                 operator: UnaryOperator::Minus,
@@ -94,9 +92,7 @@ where
 
             Node {
                 content,
-                line_num: token.line_num,
-                col_start: token.col_start,
-                col_end,
+                position: Position { col_end, ..token.position }
             }
         }
         _ => return Err(anyhow!("Unexpected token in numeric expression.")),
@@ -121,7 +117,7 @@ where
             t @ (TokenType::Multiply | TokenType::Divide) => {
                 _ = tokens.next().expect("Unexpected Error");
 
-                let col_start = left_node.col_start;
+                let col_start = left_node.position.col_start;
                 let operator = if *t == TokenType::Multiply {
                     BinaryOperator::Multiply
                 } else {
@@ -129,7 +125,7 @@ where
                 };
 
                 let right_node = parse_factor(tokens)?;
-                let col_end = right_node.col_end;
+                let col_end = right_node.position.col_end;
 
                 let binary_operation = BinaryOperation {
                     left: left_node,
@@ -140,9 +136,7 @@ where
 
                 let new_node = Node {
                     content,
-                    col_start,
-                    col_end: col_end,
-                    line_num: token.line_num,
+                    position: Position { col_start, col_end, line_num: token.position.line_num, }
                 };
                 new_node
             }
@@ -171,7 +165,7 @@ where
         left = match &token.kind {
             t @ (TokenType::Plus | TokenType::Minus) => {
                 _ = tokens.next().expect("Unexpected Error");
-                let col_start = left.col_start;
+                let col_start = left.position.col_start;
                 let operator = if *t == TokenType::Plus {
                     BinaryOperator::Plus
                 } else {
@@ -179,7 +173,7 @@ where
                 };
 
                 let right = parse_term(tokens)?;
-                let col_end = right.col_end;
+                let col_end = right.position.col_end;
                 let binary_op = BinaryOperation {
                     left,
                     right,
@@ -188,9 +182,7 @@ where
                 let content = Expression::BinaryOperation(Box::new(binary_op));
                 Node {
                     content,
-                    col_start,
-                    col_end: col_end,
-                    line_num: token.line_num,
+                    position: Position { line_num: token.position.line_num, col_start, col_end }
                 }
             }
             _ => {

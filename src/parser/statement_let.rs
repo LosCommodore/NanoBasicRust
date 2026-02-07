@@ -24,7 +24,7 @@ impl LetStatement {
             .next()
             .ok_or(anyhow!("Syntax error: unexpected end of line"))?;
 
-        let col_start = token.col_start;
+        let mut position = token.position;
 
         println!("{:?}", &token);
         let TokenType::Variable(var_name) = &token.kind else {
@@ -42,32 +42,29 @@ impl LetStatement {
 
         // create numeric Expression here
         let expression = parse_expression(tokens)?;
-        let col_end = expression.col_end;
+        position.col_end = expression.position.col_end;
+
         let content = LetStatement {
             name: var_name.clone(),
             expression,
         };
-        let node = Node {
-            content,
-            line_num: token.line_num,
-            col_start,
-            col_end,
-        };
-        Ok(node)
+        Ok(Node { content, position })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::parser::statement_let::LetStatement;
-    use crate::tokenizer::{Token, TokenType};
+    use crate::tokenizer::{Position, Token, TokenType};
 
     fn dummy_token(tk: TokenType) -> Token {
         Token {
             kind: tk,
+            position: Position {
             line_num: 10,
             col_start: 1,
             col_end: 2,
+            }
         }
     }
 

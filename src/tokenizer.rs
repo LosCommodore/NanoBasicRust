@@ -36,12 +36,17 @@ pub enum TokenType {
 
 const IGNORE_TOKEN_TYPES: &[TokenType] = &[TokenType::Whitespace, TokenType::Comment];
 
+#[derive(Clone, Copy, Serialize, Debug, PartialEq)]
+pub struct Position {
+    pub line_num: usize, // line number (in text editor)
+    pub col_start: usize,
+    pub col_end: usize,
+}
+
 #[derive(Debug, PartialEq)]
 pub struct Token {
     pub kind: TokenType,
-    pub line_num: usize,
-    pub col_start: usize,
-    pub col_end: usize,
+    pub position: Position,
 }
 
 #[allow(unused)]
@@ -98,11 +103,15 @@ fn match_token(text: &str, col_start: usize) -> Result<Token> {
         let m = case.regex.find(text)?;
         let content = &text[m.start()..m.end()];
 
-        Some(Token {
-            kind: (case.ctor)(content),
+        let position = Position {
             line_num: 0,
             col_start: m.start() + col_start,
             col_end: m.end() + col_start,
+        };
+
+        Some(Token {
+            kind: (case.ctor)(content),
+            position,
         })
     }
 
@@ -120,10 +129,10 @@ fn match_line(line: &str, line_num: usize) -> Result<Vec<Token>> {
     while line.len() > col {
         let mut token = match_token(&line[col..], col)?;
         //println!("found token: {:?}", token);
-        let offset = token.col_end - token.col_start;
+        let offset = token.position.col_end - token.position.col_start;
 
         if !IGNORE_TOKEN_TYPES.contains(&token.kind) {
-            token.line_num = line_num;
+            token.position.line_num = line_num;
             tokens.push(token);
         }
 
@@ -164,45 +173,55 @@ mod tests {
                 r"rem hallo",
                 Token {
                     kind: TokenType::Comment,
-                    line_num: 0,
-                    col_start: 0,
-                    col_end: 9,
+                    position: Position {
+                        line_num: 0,
+                        col_start: 0,
+                        col_end: 9,
+                    },
                 },
             ),
             (
                 r"REM HaLLo",
                 Token {
                     kind: TokenType::Comment,
-                    line_num: 0,
-                    col_start: 0,
-                    col_end: 9,
+                    position: Position {
+                        line_num: 0,
+                        col_start: 0,
+                        col_end: 9,
+                    },
                 },
             ),
             (
                 r"goto",
                 Token {
                     kind: TokenType::Goto,
-                    line_num: 0,
-                    col_start: 0,
-                    col_end: 4,
+                    position: Position {
+                        line_num: 0,
+                        col_start: 0,
+                        col_end: 4,
+                    },
                 },
             ),
             (
                 r")",
                 Token {
                     kind: TokenType::CloseParen,
-                    line_num: 0,
-                    col_start: 0,
-                    col_end: 1,
+                    position: Position {
+                        line_num: 0,
+                        col_start: 0,
+                        col_end: 1,
+                    },
                 },
             ),
             (
                 r"ABC",
                 Token {
                     kind: TokenType::Variable("ABC".to_string()),
-                    line_num: 0,
-                    col_start: 0,
-                    col_end: 3,
+                    position: Position {
+                        line_num: 0,
+                        col_start: 0,
+                        col_end: 3,
+                    },
                 },
             ),
         ];
@@ -220,21 +239,27 @@ mod tests {
         let expected = [
             Token {
                 kind: TokenType::Variable("a".to_string()),
-                line_num: 0,
-                col_start: 0,
-                col_end: 1,
+                position: Position {
+                    line_num: 0,
+                    col_start: 0,
+                    col_end: 1,
+                },
             },
             Token {
                 kind: TokenType::Equal,
-                line_num: 0,
-                col_start: 2,
-                col_end: 3,
+                position: Position {
+                    line_num: 0,
+                    col_start: 2,
+                    col_end: 3,
+                },
             },
             Token {
                 kind: TokenType::Number(3),
-                line_num: 0,
-                col_start: 4,
-                col_end: 5,
+                position: Position {
+                    line_num: 0,
+                    col_start: 4,
+                    col_end: 5,
+                },
             },
         ];
 
