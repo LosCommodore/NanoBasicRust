@@ -4,15 +4,6 @@ use anyhow::{Result, anyhow};
 use serde::Serialize;
 use std::iter::Peekable;
 
-#[derive(Serialize)]
-#[allow(unused)]
-#[derive(Debug, PartialEq)]
-pub struct BooleanExpression {
-    pub operator: RelationalOperator,
-    pub left_expr: Node<Expression>,
-    pub right_expr: Node<Expression>,
-}
-
 #[derive(Serialize, Debug, PartialEq)]
 pub enum BinaryOperator {
     Plus,
@@ -21,29 +12,11 @@ pub enum BinaryOperator {
     Devide,
 }
 
-/// Relationaloparator ::= <relop>
-#[derive(Serialize, Debug, PartialEq)]
-pub enum RelationalOperator {
-    Equal,
-    NotEqual,
-    LessEqual,
-    GreaterEqual,
-    Less,
-    Greater,
-}
-
 #[derive(Serialize, Debug, PartialEq)]
 pub struct BinaryOperation {
     left: Node<Expression>,
     right: Node<Expression>,
     operator: BinaryOperator,
-}
-
-#[allow(unused)]
-pub struct BooleanOperation {
-    left: Node<Expression>,
-    right: Node<Expression>,
-    operator: RelationalOperator,
 }
 
 #[derive(Serialize, Debug, PartialEq)]

@@ -2,8 +2,8 @@ use super::Node;
 use super::expressions::Expression;
 use crate::tokenizer::Token;
 use anyhow::Result;
-use std::iter::Peekable;
 use serde::Serialize;
+use std::iter::Peekable;
 
 #[allow(dead_code)]
 #[derive(Serialize)]
@@ -17,16 +17,14 @@ pub enum PrintItem {
 pub type PrintStatement = Vec<PrintItem>;
 pub type PrintNode = Node<PrintStatement>;
 
-
 #[allow(dead_code)]
 
 pub fn parse_print_node<'a, I>(_tokens: &mut Peekable<I>) -> Result<PrintNode>
-    where
-        I: Iterator<Item = &'a Token>,
-    {
-        todo!();
-    }
-
+where
+    I: Iterator<Item = &'a Token>,
+{
+    todo!();
+}
 
 impl PrintItem {
     #[allow(dead_code)]
