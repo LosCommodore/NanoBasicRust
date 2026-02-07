@@ -1,9 +1,10 @@
 use super::Node;
 use super::expressions::Expression;
-use super::statement_if::{IfStatement};
+use super::statement_if::IfStatement;
 use super::statement_let::LetStatement;
+use super::statement_print::{PrintNode, parse_print_node};
 use crate::parser::expressions::parse_expression;
-use crate::tokenizer::{Token};
+use crate::tokenizer::Token;
 use crate::tokenizer::TokenType as TT;
 use anyhow::{Result, anyhow};
 use serde::Serialize;
@@ -17,10 +18,9 @@ use std::iter::Peekable;
 ///  | 'GOSUB' <expression>
 ///  | 'RETURN'
 ///
-#[derive(Serialize)]
-#[derive(Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq)]
 pub enum Statement {
-    Print(Box<Vec<Node<Expression>>>),
+    Print(Box<PrintNode>),
     If(Box<Node<IfStatement>>),
     GoSub(Box<Node<Expression>>),
     GoTo(Box<Node<Expression>>),
@@ -37,9 +37,9 @@ impl Statement {
         I: Iterator<Item = &'a Token>,
     {
         let token: &Token = tokens.next().ok_or(anyhow!("Token not found"))?;
-       
+
         let statement = match token.kind {
-            TT::Print => todo!("implement print"),
+            TT::Print => Print(Box::new(parse_print_node(tokens)?)),
             TT::If => If(Box::new(IfStatement::parse_node(tokens)?)),
             TT::Let => Let(Box::new(LetStatement::parse(tokens)?)),
             TT::Goto => GoTo(Box::new(parse_expression(tokens)?)),

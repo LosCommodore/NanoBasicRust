@@ -1,6 +1,7 @@
 pub mod expressions;
 pub mod statement_if;
 pub mod statement_let;
+pub mod statement_print;
 pub mod statements;
 
 use crate::parser::statements::Statement;

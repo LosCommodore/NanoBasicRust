@@ -3,7 +3,7 @@ use super::expressions::{BooleanExpression, RelationalOperator};
 use super::{Node, Statement};
 use crate::parser::expressions::Expression;
 use crate::tokenizer::Token;
-use anyhow::{Result};
+use anyhow::Result;
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -41,7 +41,6 @@ where
     todo!();
     // let node = Node {content: dummy_boolean_expression, .. left_node};
     // Ok(dummy_boolean_expression)
-
 }
 
 impl IfStatement {
