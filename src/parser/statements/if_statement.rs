@@ -30,7 +30,7 @@ pub struct BooleanExpression {
 #[derive(Debug, PartialEq)]
 pub struct IfStatement {
     boolean_expr: Node<BooleanExpression>,
-    then_statement: Statement,
+    then_statement: Node<Statement>,
 }
 
 fn parse_relational_operator<'a, I>(tokens: &mut Peekable<I>) -> Result<RelationalOperator>

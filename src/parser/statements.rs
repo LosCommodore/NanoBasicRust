@@ -23,11 +23,11 @@ use std::iter::Peekable;
 ///
 #[derive(Serialize, Debug, PartialEq)]
 pub enum Statement {
-    Print(Box<Node<Printables>>),
-    If(Box<Node<IfStatement>>),
-    GoSub(Box<Node<Expression>>),
-    GoTo(Box<Node<Expression>>),
-    Let(Box<Node<LetStatement>>),
+    Print(Box<Printables>),
+    If(Box<IfStatement>),
+    GoSub(Box<Expression>),
+    GoTo(Box<Expression>),
+    Let(Box<LetStatement>),
     Return,
 }
 
@@ -35,19 +35,37 @@ use Statement::*;
 
 impl Statement {
     /// Parse statement from tokens
-    pub fn parse<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
+    pub fn parse<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Self>>
     where
         I: Iterator<Item = &'a Token>,
     {
         let token: &Token = tokens.next().ok_or(anyhow!("Token not found"))?;
 
         let statement = match token.kind {
-            TT::Print => Print(Box::new(parse_printables(tokens)?)),
-            TT::If => If(Box::new(IfStatement::parse_node(tokens)?)),
-            TT::Let => Let(Box::new(LetStatement::parse(tokens)?)),
-            TT::Goto => GoTo(Box::new(parse_expression(tokens)?)),
-            TT::Gosub => GoSub(Box::new(parse_expression(tokens)?)),
-            TT::Return => Return,
+            TT::Print => {
+                let Node {content, position} =    parse_printables(tokens)?;
+                Node{position, content: Print(Box::new(content)) }
+            }
+            TT::If =>  {
+                let Node {content, position} =    IfStatement::parse_node(tokens)?;
+                Node{position, content: If(Box::new(content)) }
+
+            },
+            TT::Let => {
+                let Node {content, position} =  LetStatement::parse(tokens)?;
+                Node{position, content: Let(Box::new(content)) }
+            },
+            TT::Goto => {
+                let Node {content, position} = parse_expression(tokens)?;
+                Node{position, content: GoTo(Box::new(content)) }
+            },
+            TT::Gosub => {
+                let Node {content, position} = parse_expression(tokens)?;
+                Node{position, content: GoSub(Box::new(content)) }
+            },
+            TT::Return => {
+                Node{position: token.position, content: Return} 
+            }
             _ => return Err(anyhow!("Unknown Statement: '{:?}'", token.kind)),
         };
         Ok(statement)

@@ -7,6 +7,12 @@ use anyhow::{Result, anyhow, bail};
 use serde::Serialize;
 use std::iter::Peekable;
 
+/*
+trait Parse: Sized {
+    fn into_node<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Self>> where I: Iterator<Item = &'a Token>;
+}
+*/
+
 /// Represents postion information in the code
 #[derive(Serialize, Debug, PartialEq)]
 pub struct Node<T> {
@@ -23,6 +29,7 @@ impl<T> Node<T> {
     }
 }
 
+
 /// Syntax Line:
 /// <line>::= <number> <statement> "\n" | "REM" .* \n
 ///
@@ -30,7 +37,7 @@ impl<T> Node<T> {
 #[derive(Serialize, Debug, PartialEq)]
 pub struct Line {
     line_id: usize,
-    statement: Statement,
+    statement: Node<Statement>,
 }
 
 /// Parse a line from tokens
