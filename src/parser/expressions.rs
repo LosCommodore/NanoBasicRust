@@ -78,7 +78,10 @@ where
 
             Node {
                 content: inner_node.content,
-                position: Position{col_end: inner_node.position.col_end, ..first_token.position}    
+                position: Position {
+                    col_end: inner_node.position.col_end,
+                    ..first_token.position
+                },
             }
         }
 
@@ -92,7 +95,10 @@ where
 
             Node {
                 content,
-                position: Position { col_end, ..token.position }
+                position: Position {
+                    col_end,
+                    ..token.position
+                },
             }
         }
         _ => return Err(anyhow!("Unexpected token in numeric expression.")),
@@ -136,7 +142,11 @@ where
 
                 let new_node = Node {
                     content,
-                    position: Position { col_start, col_end, line_num: token.position.line_num, }
+                    position: Position {
+                        col_start,
+                        col_end,
+                        line_num: token.position.line_num,
+                    },
                 };
                 new_node
             }
@@ -182,7 +192,11 @@ where
                 let content = Expression::BinaryOperation(Box::new(binary_op));
                 Node {
                     content,
-                    position: Position { line_num: token.position.line_num, col_start, col_end }
+                    position: Position {
+                        line_num: token.position.line_num,
+                        col_start,
+                        col_end,
+                    },
                 }
             }
             _ => {

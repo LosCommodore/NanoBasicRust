@@ -5,7 +5,6 @@ use anyhow::{Result, anyhow};
 use serde::Serialize;
 use std::iter::Peekable;
 
-
 #[derive(Serialize, Debug, PartialEq)]
 pub struct LetStatement {
     name: String,
@@ -59,10 +58,10 @@ mod tests {
         Token {
             kind: tk,
             position: Position {
-            line_num: 10,
-            col_start: 1,
-            col_end: 2,
-            }
+                line_num: 10,
+                col_start: 1,
+                col_end: 2,
+            },
         }
     }
 

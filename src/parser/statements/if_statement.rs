@@ -1,7 +1,7 @@
 //use std::iter::Peekable;
 use super::{Node, Statement};
 use crate::parser::expressions::{Expression, parse_expression};
-use crate::tokenizer::{ Token, TokenType};
+use crate::tokenizer::{Token, TokenType};
 use anyhow::{Result, anyhow, bail};
 use serde::Serialize;
 use std::iter::Peekable;
@@ -68,7 +68,7 @@ where
         left_expr,
         right_expr,
     };
-    let node = Node { content, position, };
+    let node = Node { content, position };
     Ok(node)
 }
 
@@ -92,7 +92,7 @@ impl IfStatement {
         };
         let node = Node {
             content,
-            position: position
+            position: position,
         };
         Ok(node)
     }
@@ -100,8 +100,8 @@ impl IfStatement {
 
 #[cfg(test)]
 mod tests {
-    use super::{Result, parse_boolean_expression};
     use super::IfStatement;
+    use super::{Result, parse_boolean_expression};
     use crate::tokenizer::tokenize;
 
     #[test]
