@@ -15,7 +15,7 @@ pub enum Printable {
 
 pub type Printables = Vec<Node<Printable>>;
 
-fn parse_printable<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Printable>>
+fn parse_one_printable<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Printable>>
 where
     I: Iterator<Item = &'a Token>,
 {
@@ -46,7 +46,7 @@ where
     let mut printables =  Vec::new();
     loop 
     {
-        let printable: Node<Printable> = parse_printable(tokens)?;
+        let printable: Node<Printable> = parse_one_printable(tokens)?;
         printables.push(printable);
 
         if let Some(Token{kind:TokenType::Comma, ..}) = tokens.peek()
@@ -61,3 +61,47 @@ where
     }
 }
 
+#[cfg(test)]
+mod tests{
+    use crate::tokenizer::tokenize;
+    use super::Result;
+
+    #[test]
+    fn test_parse_printable() -> Result<()> {
+          let printables = vec![r#""Hallo""#.to_string(), r#""2+3*4""#.to_string()];
+
+        for printable in &printables {
+            println!("{:#?}", printable);
+
+            println!("* Tokenizing");
+            let tokens = tokenize(&vec!(printable.clone()))?;
+
+            println!("* Parsing");
+            let mut iter_token = tokens.iter().peekable();
+            let result = super::parse_printables(&mut iter_token)?;
+            println!("{:#?}", result);
+        }
+        Ok(())
+    }
+    
+    #[test]
+    fn test_parse_printables() -> Result<()> {
+          let printables = vec![r#""Hallo", 2+3*4"#.to_string()];
+
+        for printable in &printables {
+            println!("{:#?}", printable);
+
+            println!("* Tokenizing");
+            let tokens = tokenize(&vec!(printable.clone()))?;
+           println!("tokens = {tokens:#?}");
+
+            println!("* Parsing");
+            let mut iter_token = tokens.iter().peekable();
+            let result = super::parse_printables(&mut iter_token)?;
+            println!("{:#?}", result);
+        }
+        Ok(())
+
+    }
+
+}

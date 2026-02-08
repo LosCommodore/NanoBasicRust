@@ -94,7 +94,7 @@ static CASES: Lazy<[Case; 25]> = Lazy::new(|| {
         case!(r"\)", false, |_v| TokenType::CloseParen),
         case!(r"[A-Za-z_]+", true, |v| TokenType::Variable(v.to_string())),
         case!(r"-?[0-9]+", true, |v| TokenType::Number(v.parse().unwrap())),
-        case!(r".*", true, |v| TokenType::String(v.to_string())),
+        case!(r#"".*""#, true, |v| TokenType::String(v.to_string())),
     ]
 });
 
