@@ -149,11 +149,11 @@ pub fn read_file(path: &str) -> Result<Vec<String>> {
     Ok(out)
 }
 
-pub fn tokenize(lines: &Vec<String>) -> Result<Vec<Token>> {
+pub fn tokenize(lines: &[impl AsRef<str>]) -> Result<Vec<Token>> {
     let tokens = lines
         .iter()
         .enumerate()
-        .map(|(i, line)| match_line(line, i))
+        .map(|(i, line)| match_line(line.as_ref(), i))
         .collect::<Result<Vec<_>>>()?
         .into_iter()
         .flatten()
