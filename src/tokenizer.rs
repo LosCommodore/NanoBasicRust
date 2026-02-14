@@ -6,7 +6,6 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 
-
 #[derive(Serialize, Debug, PartialEq)]
 pub enum TokenType {
     Comment,

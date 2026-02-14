@@ -56,6 +56,18 @@ impl Line {
     }
 }
 
+pub fn parse<'a, I>(tokens: &mut Peekable<I>) -> Result<Vec<Line>>
+where
+    I: Iterator<Item = &'a Token>,
+{
+    let mut lines = Vec::new();
+    while let Some(_) = tokens.peek() {
+        let line = Line::parse(tokens)?;
+        lines.push(line);
+    }
+    Ok(lines)
+}
+
 #[cfg(test)]
 mod tests {
     use super::{Line, Result};

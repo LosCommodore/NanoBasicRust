@@ -16,7 +16,7 @@ fn read_factorial() -> Result<Vec<String>> {
     let absolute_str = absolute.to_string_lossy().to_string();
     println!("this is the path: {absolute_str}");
 
-    let file = tokenizer::read_file(file).context("could not read facotrial.bas") ?;
+    let file = tokenizer::read_file(file).context("could not read facotrial.bas")?;
     Ok(file)
 }
 
@@ -26,7 +26,7 @@ fn tokenize_and_parse(code: &[impl AsRef<str>]) -> Result<()> {
     println!("{:#?}", tokens);
     let mut iter_token = tokens.iter().peekable();
 
-    let out = parser::Line::parse(&mut iter_token)?;
+    let out = parser::parse(&mut iter_token)?;
     println!("{:#?}", out);
 
     let file = File::create("output.json").expect("failed to create file");
