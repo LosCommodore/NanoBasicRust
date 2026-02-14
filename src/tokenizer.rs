@@ -4,6 +4,8 @@ use regex::Regex;
 use serde::Serialize;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::Path;
+
 
 #[derive(Serialize, Debug, PartialEq)]
 pub enum TokenType {
@@ -123,7 +125,7 @@ fn match_token(text: &str, col_start: usize) -> Result<Token> {
     token
 }
 
-fn match_line(line: &str, line_num: usize) -> Result<Vec<Token>> {
+fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>> {
     let mut tokens = Vec::<Token>::new();
     let mut col = 0;
     while line.len() > col {
@@ -141,7 +143,7 @@ fn match_line(line: &str, line_num: usize) -> Result<Vec<Token>> {
     Ok(tokens)
 }
 
-pub fn read_file(path: &str) -> Result<Vec<String>> {
+pub fn read_file(path: impl AsRef<Path>) -> Result<Vec<String>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
 
@@ -149,11 +151,12 @@ pub fn read_file(path: &str) -> Result<Vec<String>> {
     Ok(out)
 }
 
+/// Read all lines into a Vec of Tokens
 pub fn tokenize(lines: &[impl AsRef<str>]) -> Result<Vec<Token>> {
     let tokens = lines
         .iter()
         .enumerate()
-        .map(|(i, line)| match_line(line.as_ref(), i))
+        .map(|(i, line)| tokenize_line(line.as_ref(), i))
         .collect::<Result<Vec<_>>>()?
         .into_iter()
         .flatten()
@@ -264,7 +267,7 @@ mod tests {
         ];
 
         println!("Using regex: {}", param);
-        let m = match_line(param, 0).unwrap();
+        let m = tokenize_line(param, 0).unwrap();
         print!("{:#?}", m);
         assert_eq!(expected, *m);
     }

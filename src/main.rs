@@ -16,12 +16,12 @@ fn read_factorial() -> Result<Vec<String>> {
     let absolute_str = absolute.to_string_lossy().to_string();
     println!("this is the path: {absolute_str}");
 
-    let file = tokenizer::read_file(&absolute_str).context("could not read facotrial.bas") ?;
+    let file = tokenizer::read_file(file).context("could not read facotrial.bas") ?;
     Ok(file)
 }
 
-fn tokenize_and_parse(txt: &[impl AsRef<str>]) -> Result<()> {
-    let tokens = tokenize(txt)?;
+fn tokenize_and_parse(code: &[impl AsRef<str>]) -> Result<()> {
+    let tokens = tokenize(code)?;
 
     println!("{:#?}", tokens);
     let mut iter_token = tokens.iter().peekable();
@@ -35,22 +35,12 @@ fn tokenize_and_parse(txt: &[impl AsRef<str>]) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    //color_backtrace::install();
-
-    println!("Starting program");
-    let env_name = "RUST_BACKTRACE".to_string();
-    if let Ok(value) = env::var(env_name) {
-        println!("env_name = {}", value);
-    } else {
-        println!("env_name not found!");
-    }
-
     // -- Read input
-    let txt = read_factorial()?;
+    let code = read_factorial()?;
     //let txt: Vec<String> = vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()];
 
     // -- main
-    tokenize_and_parse(&txt)?;
+    tokenize_and_parse(&code)?;
 
     println!("Finished program");
     Ok(())
