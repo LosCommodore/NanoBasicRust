@@ -166,9 +166,8 @@ pub fn tokenize(lines: &[impl AsRef<str>]) -> Result<Vec<Token>> {
 
 impl AsRef<Token> for Token {
     fn as_ref(&self) -> &Token {
-        return &self
+        return &self;
     }
-
 }
 
 #[cfg(test)]
