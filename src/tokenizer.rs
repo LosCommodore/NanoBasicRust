@@ -164,6 +164,13 @@ pub fn tokenize(lines: &[impl AsRef<str>]) -> Result<Vec<Token>> {
     Ok(tokens)
 }
 
+impl AsRef<Token> for Token {
+    fn as_ref(&self) -> &Token {
+        return &self
+    }
+
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -24,9 +24,8 @@ fn tokenize_and_parse(code: &[impl AsRef<str>]) -> Result<()> {
     let tokens = tokenize(code)?;
 
     println!("{:#?}", tokens);
-    let mut iter_token = tokens.iter().peekable();
 
-    let out = parser::parse(&mut iter_token)?;
+    let out = parser::parse(&tokens)?;
     println!("{:#?}", out);
 
     let file = File::create("output.json").expect("failed to create file");

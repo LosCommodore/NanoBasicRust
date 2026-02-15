@@ -39,11 +39,12 @@ pub struct Line {
     statement: Node<Statement>,
 }
 
+
 /// Parse a line from tokens
 impl Line {
     pub fn parse<'a, I>(tokens: &mut Peekable<I>) -> Result<Self>
     where
-        I: Iterator<Item = &'a Token>,
+        I: Iterator<Item=&'a Token>
     {
         let line_token = tokens.next().ok_or(anyhow!("Token not found"))?;
 
@@ -56,13 +57,14 @@ impl Line {
     }
 }
 
-pub fn parse<'a, I>(tokens: &mut Peekable<I>) -> Result<Vec<Line>>
-where
-    I: Iterator<Item = &'a Token>,
+pub fn parse<'a>(tokens: &[Token]) -> Result<Vec<Line>>
+
 {
+    let mut iter_token= tokens.iter().peekable();
+
     let mut lines = Vec::new();
-    while let Some(_) = tokens.peek() {
-        let line = Line::parse(tokens)?;
+    while let Some(_) = iter_token.peek() {
+        let line = Line::parse(&mut iter_token)?;
         lines.push(line);
     }
     Ok(lines)
