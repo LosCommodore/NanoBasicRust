@@ -30,6 +30,8 @@ fn main() -> Result<()> {
     .write_style(WriteStyle::Always)       // Schreibt in stdout statt stderr
     .init();
 
+    log_panics::init(); // Ab jetzt landen Panics im Log
+
     log::info!("Starting progam");
 
     let result =  run_app();
