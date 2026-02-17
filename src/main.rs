@@ -1,46 +1,43 @@
 pub mod parser;
 pub mod tokenizer;
-use anyhow::{Context, Result};
-use std::env;
+use anyhow::{ Result};
 use std::fs::File;
-use std::path::PathBuf;
-use tokenizer::tokenize;
+use std::path::Path;
+use env_logger::{Builder, Target, WriteStyle};
+use log::LevelFilter;
 
-#[allow(dead_code)]
-fn read_factorial() -> Result<Vec<String>> {
-    let file: &str = r"../Examples/factorial.bas";
 
-    let current_dir: PathBuf = env::current_dir()?;
-    let absolute: PathBuf = current_dir.join(file);
-
-    let absolute_str = absolute.to_string_lossy().to_string();
-    println!("this is the path: {absolute_str}");
-
-    let file = tokenizer::read_file(file).context("could not read facotrial.bas")?;
-    Ok(file)
-}
-
-fn tokenize_and_parse(code: &[impl AsRef<str>]) -> Result<()> {
-    let tokens = tokenize(code)?;
-
+fn tokenize_and_parse(file: impl AsRef<Path>) -> Result<()> {
+    let tokens = tokenizer::read_file(file)?;
     println!("{:#?}", tokens);
 
-    let out = parser::parse(&tokens)?;
-    println!("{:#?}", out);
+    let lines = parser::parse(&tokens)?;
+    println!("{:#?}", lines);
 
     let file = File::create("output.json").expect("failed to create file");
-    serde_json::to_writer_pretty(&file, &out)?;
+    serde_json::to_writer_pretty(&file, &lines)?;
     Ok(())
 }
 
+fn run_app() -> Result<()> {
+    tokenize_and_parse("../Examples/factorial.bas")
+}
+
 fn main() -> Result<()> {
-    // -- Read input
-    let code = read_factorial()?;
-    //let txt: Vec<String> = vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()];
+    Builder::new()
+    .filter_level(LevelFilter::Info) // Setzt das Basis-Level auf Info
+    .target(Target::Stdout)    
+    .write_style(WriteStyle::Always)       // Schreibt in stdout statt stderr
+    .init();
 
-    // -- main
-    tokenize_and_parse(&code)?;
+    log::info!("Starting progam");
 
-    println!("Finished program");
+    let result =  run_app();
+    if let Err(e) = result {
+        log::error!("Progam aborted due to error: {e:?}");
+        return Err(e)
+    };
+
+    log::info!("Finished program");
     Ok(())
 }

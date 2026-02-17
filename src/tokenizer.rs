@@ -1,4 +1,4 @@
-use anyhow::{Result, anyhow};
+use anyhow::{Context, Result, anyhow};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::Serialize;
@@ -142,12 +142,17 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>> {
     Ok(tokens)
 }
 
-pub fn read_file(path: impl AsRef<Path>) -> Result<Vec<String>> {
-    let file = File::open(path)?;
+pub fn read_file(path: impl AsRef<Path>) -> Result<Vec<Token>> 
+{
+    let path = path.as_ref();
+    log::info!(r#"Parsing tokens from "{path:#?}""#);
+
+    let file = File::open(path).context(format!("Could not open file: {}", path.display()))?;
     let reader = BufReader::new(file);
 
-    let out: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
-    Ok(out)
+    let lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
+    let tokens = tokenize(&lines)?;
+    Ok(tokens)
 }
 
 /// Read all lines into a Vec of Tokens

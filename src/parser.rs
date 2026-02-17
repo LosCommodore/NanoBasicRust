@@ -7,11 +7,6 @@ use anyhow::{Result, anyhow, bail};
 use serde::Serialize;
 use std::iter::Peekable;
 
-/*
-trait Parse: Sized {
-    fn into_node<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Self>> where I: Iterator<Item = &'a Token>;
-}
-*/
 
 /// Represents postion information in the code
 #[derive(Serialize, Debug, PartialEq)]
