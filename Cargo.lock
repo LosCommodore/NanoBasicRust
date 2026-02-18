@@ -86,6 +86,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "app"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "color-backtrace",
+ "env_logger",
+ "log",
+ "log-panics",
+ "nanobasic",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "backtrace"
 version = "0.3.76"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -121,22 +135,6 @@ name = "colorchoice"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
-
-[[package]]
-name = "cs_rust"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "color-backtrace",
- "env_logger",
- "lazy_static",
- "log",
- "log-panics",
- "once_cell",
- "regex",
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "env_filter"
@@ -243,6 +241,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1fa76a2c86f704bdb222d66965fb3d63269ce38518b83cb0575fca855ebb6316"
 dependencies = [
  "adler2",
+]
+
+[[package]]
+name = "nanobasic"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "lazy_static",
+ "log",
+ "once_cell",
+ "regex",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

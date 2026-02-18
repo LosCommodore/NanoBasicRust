@@ -1,0 +1,13 @@
+[package]
+name = "nanobasic"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+lazy_static = "1.5.0"
+once_cell = "1.21.3"
+regex = "1.12.2"
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true

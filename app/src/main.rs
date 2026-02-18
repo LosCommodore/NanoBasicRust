@@ -1,5 +1,4 @@
-pub mod parser;
-pub mod tokenizer;
+use nanobasic;
 use anyhow::{ Result};
 use std::fs::File;
 use std::path::Path;
@@ -8,10 +7,10 @@ use log::LevelFilter;
 
 
 fn tokenize_and_parse(file: impl AsRef<Path>) -> Result<()> {
-    let tokens = tokenizer::read_file(file)?;
+    let tokens = nanobasic::tokenizer::read_file(file)?;
     println!("{:#?}", tokens);
 
-    let lines = parser::parse(&tokens)?;
+    let lines = nanobasic::parser::parse(&tokens)?;
     println!("{:#?}", lines);
 
     let file = File::create("output.json").expect("failed to create file");

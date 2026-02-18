@@ -6,7 +6,7 @@
             "name": "Debug Rust (Linux)",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/target/debug/cs_rust",
+            "program": "${workspaceFolder}/target/debug/app",
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "rust: cargo build",
             "sourceLanguages": ["rust"]
