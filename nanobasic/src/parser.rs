@@ -7,7 +7,6 @@ use anyhow::{Result, anyhow, bail};
 use serde::Serialize;
 use std::iter::Peekable;
 
-
 /// Represents postion information in the code
 #[derive(Serialize, Debug, PartialEq)]
 pub struct Node<T> {

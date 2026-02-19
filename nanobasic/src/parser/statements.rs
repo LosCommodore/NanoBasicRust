@@ -4,8 +4,9 @@ pub mod print_statment;
 use super::Node;
 use super::expressions::Expression;
 use crate::parser::expressions::parse_expression;
+use crate::tokenizer::Position;
 use crate::tokenizer::Token;
-use crate::tokenizer::TokenType as TT;
+use crate::tokenizer::TokenType;
 use anyhow::{Result, anyhow};
 use if_statement::IfStatement;
 use let_statment::LetStatement;
@@ -39,43 +40,34 @@ impl Statement {
     where
         I: Iterator<Item = &'a Token>,
     {
+        use TokenType as TT;
         let token: &Token = tokens.next().ok_or(anyhow!("Token not found"))?;
 
         let statement = match token.kind {
             TT::Print => {
                 let Node { content, position } = parse_printables(tokens)?;
-                Node {
-                    position,
-                    content: Print(Box::new(content)),
-                }
+                let content = Print(Box::new(content));
+                wrap_statement_in_node(content, token, position)
             }
             TT::If => {
                 let Node { content, position } = IfStatement::parse_node(tokens)?;
-                Node {
-                    position,
-                    content: If(Box::new(content)),
-                }
+                let content = If(Box::new(content));
+                wrap_statement_in_node(content, token, position)
             }
             TT::Let => {
                 let Node { content, position } = LetStatement::parse(tokens)?;
-                Node {
-                    position,
-                    content: Let(Box::new(content)),
-                }
+                let content = Let(Box::new(content));
+                wrap_statement_in_node(content, token, position)
             }
             TT::Goto => {
                 let Node { content, position } = parse_expression(tokens)?;
-                Node {
-                    position,
-                    content: GoTo(Box::new(content)),
-                }
+                let content = GoTo(Box::new(content));
+                wrap_statement_in_node(content, token, position)
             }
             TT::Gosub => {
                 let Node { content, position } = parse_expression(tokens)?;
-                Node {
-                    position,
-                    content: GoSub(Box::new(content)),
-                }
+                let content = GoSub(Box::new(content));
+                wrap_statement_in_node(content, token, position)
             }
             TT::Return => Node {
                 position: token.position,
@@ -85,4 +77,12 @@ impl Statement {
         };
         Ok(statement)
     }
+}
+
+fn wrap_statement_in_node(content: Statement, token: &Token, postion: Position) -> Node<Statement> {
+    let position = Position {
+        col_end: postion.col_end,
+        ..token.position
+    };
+    Node { content, position }
 }

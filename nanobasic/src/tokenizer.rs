@@ -142,8 +142,7 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>> {
     Ok(tokens)
 }
 
-pub fn read_file(path: impl AsRef<Path>) -> Result<Vec<Token>> 
-{
+pub fn read_file(path: impl AsRef<Path>) -> Result<Vec<Token>> {
     let path = path.as_ref();
     log::info!(r#"Parsing tokens from "{path:#?}""#);
 
