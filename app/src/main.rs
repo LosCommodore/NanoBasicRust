@@ -18,7 +18,7 @@ fn tokenize_and_parse(file: impl AsRef<Path>) -> Result<()> {
 }
 
 fn run_app() -> Result<()> {
-    tokenize_and_parse("../Examples/factorial.bas")
+    tokenize_and_parse("nanobasic/Examples/factorial.bas")
 }
 
 fn main() -> Result<()> {
