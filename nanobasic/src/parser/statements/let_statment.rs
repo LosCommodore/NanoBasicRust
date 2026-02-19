@@ -23,7 +23,6 @@ impl LetStatement {
 
         let mut position = token.position;
 
-        println!("{:?}", &token);
         let TokenType::Variable(var_name) = &token.kind else {
             return Err(anyhow!("Syntax Error: expected variable "));
         };

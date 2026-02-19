@@ -171,7 +171,6 @@ where
             return Ok(left);
         };
 
-        println!("{:?}", token.kind);
         left = match &token.kind {
             t @ (TokenType::Plus | TokenType::Minus) => {
                 _ = tokens.next().expect("Unexpected Error");
