@@ -1,10 +1,22 @@
-use anyhow::{Context, Result, anyhow};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::Serialize;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::path::Path;
+use std::result;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum TokenizerError {
+    #[error(
+        "Do not understand code '{unkown_code}' at line: {line_num:?}, column: {col_start:?})"
+    )]
+    UnkownToken {
+        line_num: usize,
+        col_start: usize,
+        unkown_code: String,
+    },
+}
+
+pub type Result<T> = result::Result<T, TokenizerError>;
 
 #[derive(Serialize, Debug, PartialEq)]
 pub enum TokenType {
@@ -99,37 +111,33 @@ static CASES: Lazy<[Case; 25]> = Lazy::new(|| {
     ]
 });
 
-fn match_token(text: &str, col_start: usize) -> Result<Token> {
-    fn find_token(case: &Case, text: &str, col_start: usize) -> Option<Token> {
+fn match_token(text: &str, col_start: usize, line_num: usize) -> Result<Token> {
+    let token = CASES.iter().find_map(|case| {
         let m = case.regex.find(text)?;
         let content = &text[m.start()..m.end()];
 
-        let position = Position {
-            line_num: 0,
-            col_start: m.start() + col_start,
-            col_end: m.end() + col_start,
-        };
-
         Some(Token {
             kind: (case.ctor)(content),
-            position,
+            position: Position {
+                line_num,
+                col_start: m.start() + col_start,
+                col_end: m.end() + col_start,
+            },
         })
-    }
+    });
 
-    let token = CASES
-        .iter()
-        .find_map(|case| find_token(case, text, col_start));
-
-    let token = token.ok_or(anyhow!("Syntax Error"));
-    token
+    token.ok_or(TokenizerError::UnkownToken {
+        line_num,
+        col_start,
+        unkown_code: text.to_string(),
+    })
 }
 
 fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>> {
     let mut tokens = Vec::<Token>::new();
     let mut col = 0;
     while line.len() > col {
-        let mut token = match_token(&line[col..], col)?;
-        //println!("found token: {:?}", token);
+        let mut token = match_token(&line[col..], col, line_num)?;
         let offset = token.position.col_end - token.position.col_start;
 
         if !IGNORE_TOKEN_TYPES.contains(&token.kind) {
@@ -142,19 +150,7 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>> {
     Ok(tokens)
 }
 
-pub fn read_file(path: impl AsRef<Path>) -> Result<Vec<Token>> {
-    let path = path.as_ref();
-    log::info!(r#"Parsing tokens from "{path:#?}""#);
-
-    let file = File::open(path).context(format!("Could not open file: {}", path.display()))?;
-    let reader = BufReader::new(file);
-
-    let lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
-    let tokens = tokenize(&lines)?;
-    Ok(tokens)
-}
-
-/// Read all lines into a Vec of Tokens
+/// Translate input into a Vec of Tokens
 pub fn tokenize(lines: &[impl AsRef<str>]) -> Result<Vec<Token>> {
     let tokens = lines
         .iter()
@@ -240,7 +236,7 @@ mod tests {
 
         for (text, result) in &params {
             println!("Using regex: {}", *text);
-            assert_eq!(match_token(*text, 0).unwrap(), *result);
+            assert_eq!(match_token(*text, 0,0).unwrap(), *result);
         }
     }
 
