@@ -7,7 +7,7 @@ use crate::parser::expressions::parse_expression;
 use crate::tokenizer::Position;
 use crate::tokenizer::Token;
 use crate::tokenizer::TokenType;
-use anyhow::{Result, anyhow};
+use crate::{ParseError,Result};
 use if_statement::IfStatement;
 use let_statment::LetStatement;
 use print_statment::{Printables, parse_printables};
@@ -41,7 +41,7 @@ impl Statement {
         I: Iterator<Item = &'a Token>,
     {
         use TokenType as TT;
-        let token: &Token = tokens.next().ok_or(anyhow!("Token not found"))?;
+        let token: &Token = tokens.next().ok_or(ParseError::UnexpectedEOF)?;
 
         let statement = match token.kind {
             TT::Print => {
@@ -73,7 +73,7 @@ impl Statement {
                 position: token.position,
                 content: Return,
             },
-            _ => return Err(anyhow!("Unknown Statement: '{:?}'", token.kind)),
+            _ => return Err(ParseError::WrongToken{expected:"Statement".to_string(), actual:format!("{:?}",token.kind)})
         };
         Ok(statement)
     }

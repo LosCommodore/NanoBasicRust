@@ -1,6 +1,6 @@
 use super::Node;
 use crate::tokenizer::{Position, Token, TokenType};
-use anyhow::{Result, anyhow};
+use crate::{Result,ParseError};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -51,7 +51,7 @@ where
 {
     let first_token = tokens
         .next()
-        .ok_or(anyhow!("Syntax error: unexpected end of line"))?;
+        .ok_or(ParseError::UnexpectedEOF)?;
 
     let token = first_token;
     let this_node: Node<Expression> = match &token.kind {
@@ -68,12 +68,10 @@ where
         TokenType::OpenParen => {
             let inner_node: Node<Expression> = parse_expression(tokens)?;
 
-            let token = tokens.next().ok_or(anyhow!(
-                "Syntax error: unexpected end of line. Expected ')'"
-            ))?;
+            let token = tokens.next().ok_or(ParseError::UnexpectedEOF)?; 
 
             let TokenType::CloseParen = token.kind else {
-                return Err(anyhow!("Invalid Token. Expected "));
+                return Err(ParseError::WrongToken{expected:")".to_string(), actual:format!("{:?}",token.kind)});
             };
 
             Node {
@@ -101,7 +99,7 @@ where
                 },
             }
         }
-        _ => return Err(anyhow!("Unexpected token in numeric expression.")),
+        _ => return Err(ParseError::WrongToken { expected: "Numeric expression".to_string(), actual: format!("{:?}",token.kind) })
     };
 
     Ok(this_node)

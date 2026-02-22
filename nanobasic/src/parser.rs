@@ -1,9 +1,9 @@
 pub mod expressions;
 pub mod statements;
 
+use crate::{Result, ParseError};
 use crate::parser::statements::Statement;
 use crate::tokenizer::{Position, Token, TokenType};
-use anyhow::{Result, anyhow, bail};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -39,10 +39,10 @@ impl Line {
     where
         I: Iterator<Item = &'a Token>,
     {
-        let line_token = tokens.next().ok_or(anyhow!("Token not found"))?;
+        let line_token = tokens.next().ok_or(ParseError::UnexpectedEOF)?;
 
         let TokenType::Number(line_id) = line_token.kind else {
-            bail!("Expected line number")
+            return Err(ParseError::WrongToken { expected: "Line numer".to_string(), actual: format!("{:?}", line_token.kind)})
         };
 
         let statement = Statement::parse(tokens)?;
@@ -50,6 +50,7 @@ impl Line {
     }
 }
 
+/// Parse Tokens into an Abstract Syntax Tree (List of Line)
 pub fn parse<'a>(tokens: &[Token]) -> Result<Vec<Line>> {
     let mut iter_token = tokens.iter().peekable();
 
@@ -64,31 +65,7 @@ pub fn parse<'a>(tokens: &[Token]) -> Result<Vec<Line>> {
     Ok(lines)
 }
 
+// Outsource Unittests to extra file:
 #[cfg(test)]
-mod tests {
-    use super::{Line, Result};
-    use crate::tokenizer::tokenize;
-    #[test]
-    fn test_lines() -> Result<()> {
-        // -- Read input
-        let lines = [
-            vec!["10 LET A = (2 + 3)*5 + B*-10".to_string()],
-            vec!["20 GOTO 20+B".to_string()],
-            vec!["30 GOTOSUB 40".to_string()],
-            vec!["40 IF B<>33 THEN GOTO 42".to_string()],
-        ];
-
-        for line in &lines {
-            println!("{:#?}", line);
-
-            println!("* Tokenizing");
-            let tokens = tokenize(&line)?;
-
-            println!("* Parsing");
-            let mut iter_token = tokens.iter().peekable();
-            let result = Line::parse(&mut iter_token);
-            println!("{:?}", result);
-        }
-        Ok(())
-    }
-}
+#[path = "parser_tests.rs"]
+mod tests;

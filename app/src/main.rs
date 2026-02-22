@@ -7,6 +7,7 @@ use std::path::Path;
 use nanobasic::tokenizer::{Token, tokenize};
 use std::io::{BufRead, BufReader};
 
+
 fn tokenize_from_file(path: impl AsRef<Path>) -> Result<Vec<Token>> {
     let path = path.as_ref();
     log::info!(r#"Parsing tokens from "{path:#?}""#);

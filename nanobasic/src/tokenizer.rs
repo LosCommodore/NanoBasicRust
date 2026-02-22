@@ -1,20 +1,8 @@
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::Serialize;
-use std::result;
-use thiserror::Error;
+use crate::{ParseError,Result};
 
-#[derive(Error, Debug)]
-pub enum TokenizerError {
-    #[error("Do not understand code '{unkown_code}' at line: {line_num:?}, column: {col_start:?})")]
-    UnkownToken {
-        line_num: usize,
-        col_start: usize,
-        unkown_code: String,
-    },
-}
-
-pub type Result<T> = result::Result<T, TokenizerError>;
 
 #[derive(Serialize, Debug, PartialEq)]
 pub enum TokenType {
@@ -124,7 +112,7 @@ fn match_token(text: &str, col_start: usize, line_num: usize) -> Result<Token> {
         })
     });
 
-    token.ok_or(TokenizerError::UnkownToken {
+    token.ok_or(ParseError::UnkownToken {
         line_num,
         col_start,
         unkown_code: text.to_string(),

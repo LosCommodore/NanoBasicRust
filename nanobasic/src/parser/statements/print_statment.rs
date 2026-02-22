@@ -4,8 +4,7 @@ use crate::{
     parser::expressions::parse_expression,
     tokenizer::{Position, Token, TokenType},
 };
-use anyhow::Result;
-use anyhow::anyhow;
+use crate::{ParseError,Result};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -22,10 +21,10 @@ where
     I: Iterator<Item = &'a Token>,
 {
     let position: Position;
-    let token_preview = tokens.peek().ok_or(anyhow!("Expected Printable"))?;
+    let token_preview = tokens.peek().ok_or(ParseError::UnexpectedEOF)?;
     let content = match token_preview.kind {
         TokenType::String(ref str) => {
-            let token = tokens.next().expect("Token was peeked, now not found");
+            let token = tokens.next().expect("Token was peeked, now not found ??");
             position = token.position;
             Printable::String(str.clone())
         }

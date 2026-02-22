@@ -2,7 +2,7 @@
 use super::{Node, Statement};
 use crate::parser::expressions::{Expression, parse_expression};
 use crate::tokenizer::{Token, TokenType};
-use anyhow::{Result, anyhow, bail};
+use crate::{ParseError,Result};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -38,7 +38,7 @@ where
     I: Iterator<Item = &'a Token>,
 {
     use RelationalOperator::*;
-    let token = tokens.next().ok_or(anyhow!("Unexpeted end of line"))?;
+    let token = tokens.next().ok_or(ParseError::UnexpectedEOF)?;
 
     let operator = match token.kind {
         TokenType::Equal => Equal,
@@ -47,7 +47,7 @@ where
         TokenType::GreaterEqual => GreaterEqual,
         TokenType::Less => Less,
         TokenType::LessEqual => LessEqual,
-        _ => bail!("Expected Relational Operator"),
+        _ => return Err(ParseError::WrongToken { expected: "relational operator".to_string(), actual: format!("{:?}",token.kind)})
     };
 
     Ok(operator)
@@ -79,9 +79,9 @@ impl IfStatement {
     {
         let boolean_expr = parse_boolean_expression(tokens)?;
         let mut position = boolean_expr.position;
-        let then_token = tokens.next().ok_or(anyhow!("Expected Token"))?;
+        let then_token = tokens.next().ok_or(ParseError::UnexpectedEOF)?;
         if then_token.kind != TokenType::Then {
-            bail!("Expected THEN Token, got {:?}", then_token.kind);
+            return Err(ParseError::WrongToken { expected: "THEN".to_string(), actual: format!("{:?}",then_token.kind)})
         };
         let then_statement = Statement::parse(tokens)?;
         position.col_end = 0; // TODO: fix

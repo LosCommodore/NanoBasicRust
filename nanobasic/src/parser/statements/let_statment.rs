@@ -1,7 +1,7 @@
 use super::Node;
 use crate::parser::expressions::{Expression, parse_expression};
 use crate::tokenizer::{Token, TokenType};
-use anyhow::{Result, anyhow};
+use crate::{ParseError,Result};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -19,21 +19,21 @@ impl LetStatement {
         // - Variable
         let mut token = tokens
             .next()
-            .ok_or(anyhow!("Syntax error: unexpected end of line"))?;
+            .ok_or(ParseError::UnexpectedEOF)?;
 
         let mut position = token.position;
 
         let TokenType::Variable(var_name) = &token.kind else {
-            return Err(anyhow!("Syntax Error: expected variable "));
+            return Err(ParseError::WrongToken { expected: "Variable".to_string(), actual: format!("{:?}",token.kind)});
         };
 
         // Token Equal
         token = tokens
             .next()
-            .ok_or(anyhow!("Syntax error: unexpected end of line"))?;
+            .ok_or(ParseError::UnexpectedEOF)?;
 
         let TokenType::Equal = &token.kind else {
-            return Err(anyhow!("Syntax Error: expected variable"));
+            return Err(ParseError::WrongToken { expected: "Variable".to_string(), actual: format!("{:?}",token.kind)});
         };
 
         // create numeric Expression here
