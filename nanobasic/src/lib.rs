@@ -1,9 +1,19 @@
+pub mod parser;
+pub mod tokenizer;
+pub mod interpreter;
 use thiserror::Error;
 use std::result;
-
+use std::io;
+use std::path::PathBuf;
 
 #[derive(Error, Debug)]
 pub enum ParseError {
+    #[error("File '{path}' could be read")]
+    FileOpen {
+        source: io::Error,
+        path: PathBuf,
+    },
+
     #[error("Unknown token '{unkown_code}' at line: {line_num:?}, starting at column: {col_start:?})")]
     UnkownToken {
         line_num: usize,
@@ -23,6 +33,3 @@ pub enum ParseError {
 }
 
 pub type Result<T> = result::Result<T, ParseError>;
-
-pub mod parser;
-pub mod tokenizer;

@@ -3,9 +3,13 @@ pub mod statements;
 
 use crate::{Result, ParseError};
 use crate::parser::statements::Statement;
-use crate::tokenizer::{Position, Token, TokenType};
+use crate::tokenizer::{Position, Token, TokenType, tokenize};
 use serde::Serialize;
 use std::iter::Peekable;
+use std::path::Path;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 
 /// Represents postion information in the code
 #[derive(Serialize, Debug, PartialEq)]
@@ -51,7 +55,7 @@ impl Line {
 }
 
 /// Parse Tokens into an Abstract Syntax Tree (List of Line)
-pub fn parse<'a>(tokens: &[Token]) -> Result<Vec<Line>> {
+pub fn parse_tokens<'a>(tokens: &[Token]) -> Result<Vec<Line>> {
     let mut iter_token = tokens.iter().peekable();
 
     let mut lines = Vec::new();
@@ -63,6 +67,22 @@ pub fn parse<'a>(tokens: &[Token]) -> Result<Vec<Line>> {
         lines.push(line);
     }
     Ok(lines)
+}
+
+pub fn parse_file(path: impl AsRef<Path>) -> Result<Vec<Line>> {
+    let path = path.as_ref();
+
+    log::info!(r#"Opening file"{path:#?}""#);
+    let file = File::open(path)
+        .map_err(|e| ParseError::FileOpen { source: e , path:path.into() })?;
+    let reader = BufReader::new(file);
+    
+    log::info!(r"Tokenizing");
+    let lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
+    let tokens = tokenize(&lines)?;
+
+    log::info!(r"Parsing");
+    parse_tokens(&tokens)
 }
 
 // Outsource Unittests to extra file:

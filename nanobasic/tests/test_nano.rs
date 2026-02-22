@@ -24,7 +24,7 @@ fn tokenize_and_parse(file: impl AsRef<Path>) -> Result<()> {
     let tokens = tokenize_from_file(file)?;
     //println!("{:#?}", tokens);
 
-    let _lines = nanobasic::parser::parse(&tokens)?;
+    let _lines = nanobasic::parser::parse_tokens(&tokens)?;
     //println!("{:#?}", lines);
 
     //let file = File::create("output.json").expect("failed to create file");
