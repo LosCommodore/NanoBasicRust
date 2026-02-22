@@ -14,8 +14,8 @@ use std::io::{BufRead, BufReader};
 /// Represents postion information in the code
 #[derive(Serialize, Debug, PartialEq)]
 pub struct Node<T> {
-    position: Position,
-    content: T,
+    pub position: Position,
+    pub content: T,
 }
 
 impl<T> Node<T> {
@@ -33,8 +33,8 @@ impl<T> Node<T> {
 /// - Comments are already excluded by the tokenizer
 #[derive(Serialize, Debug, PartialEq)]
 pub struct Line {
-    line_id: usize,
-    statement: Node<Statement>,
+    pub line_id: usize,
+    pub statement: Node<Statement>,
 }
 
 /// Parse a line from tokens

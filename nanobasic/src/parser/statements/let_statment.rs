@@ -7,8 +7,8 @@ use std::iter::Peekable;
 
 #[derive(Serialize, Debug, PartialEq)]
 pub struct LetStatement {
-    name: String,
-    expression: Node<Expression>,
+    pub name: String,
+    pub expression: Node<Expression>,
 }
 
 impl LetStatement {

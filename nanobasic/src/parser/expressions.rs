@@ -14,9 +14,9 @@ pub enum BinaryOperator {
 
 #[derive(Serialize, Debug, PartialEq)]
 pub struct BinaryOperation {
-    left: Node<Expression>,
-    right: Node<Expression>,
-    operator: BinaryOperator,
+    pub left: Node<Expression>,
+    pub right: Node<Expression>,
+    pub operator: BinaryOperator,
 }
 
 #[derive(Serialize, Debug, PartialEq)]
@@ -37,7 +37,7 @@ pub enum Expression {
     },
 
     /// An integer written out in NanoBASIC code
-    NumberLiteral(usize),
+    NumberLiteral(isize),
 
     /// A variable *name* that will have its value retrieved
     VarRetrieve(String),
@@ -61,7 +61,7 @@ where
         }
 
         TokenType::Number(num) => {
-            let content = Expression::NumberLiteral(*num);
+            let content = Expression::NumberLiteral(*num as isize);
             Node::new(first_token, content)
         }
 
