@@ -53,7 +53,10 @@ impl Line {
         };
 
         let statement = Statement::parse(tokens)?;
-        Ok(Line { statement: Arc::new(statement), line_id })
+        Ok(Line {
+            statement: Arc::new(statement),
+            line_id,
+        })
     }
 }
 

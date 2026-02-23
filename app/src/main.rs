@@ -1,11 +1,10 @@
-use anyhow::{Result};
+use anyhow::Result;
 use env_logger::{Builder, Target, WriteStyle};
 use log::LevelFilter;
 use nanobasic;
-use std::{fs::File};
-use std::path::Path;
 use nanobasic::parser::parse_file;
-
+use std::fs::File;
+use std::path::Path;
 
 fn tokenize_and_parse(file: impl AsRef<Path>) -> Result<()> {
     let lines = parse_file(file)?;

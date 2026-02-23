@@ -1,13 +1,13 @@
+use crate::parser::Node;
+use crate::parser::statements::if_statement::{BooleanExpression, IfStatement, RelationalOperator};
 use crate::parser::statements::print_statment::Printable;
 use crate::parser::{
     Line,
     expressions::{BinaryOperator, Expression, UnaryOperator},
     statements::{Statement, let_statment::LetStatement},
 };
-use crate::parser::{Node };
 use std::collections::HashMap;
 use thiserror::Error;
-use crate::parser::statements::if_statement::{BooleanExpression, IfStatement, RelationalOperator};
 
 #[derive(Error, Debug)]
 pub enum InterpreterError {
@@ -43,16 +43,16 @@ impl Interpreter {
     fn calculate_boolean_expression(&self, expression: &BooleanExpression) -> Result<bool> {
         let left = self.calculate_expression(&expression.left_expr.content)?;
         let right = self.calculate_expression(&expression.right_expr.content)?;
-        
+
         use RelationalOperator::*;
 
-        let result  = match expression.operator {
-            Equal => { left == right }
-            Greater =>  { left > right }
-            GreaterEqual =>  { left >= right }
-            Less =>  { left < right }
-            LessEqual =>  { left <= right }
-            NotEqual => { left != right }
+        let result = match expression.operator {
+            Equal => left == right,
+            Greater => left > right,
+            GreaterEqual => left >= right,
+            Less => left < right,
+            LessEqual => left <= right,
+            NotEqual => left != right,
         };
         Ok(result)
     }
@@ -85,7 +85,7 @@ impl Interpreter {
         Ok(value)
     }
 
-    fn interpret_statement(&mut self, statement: &Statement)-> Result<()> {
+    fn interpret_statement(&mut self, statement: &Statement) -> Result<()> {
         match statement {
             Statement::Let(let_stmt) => {
                 let LetStatement { name, expression } = &**let_stmt;
@@ -125,33 +125,32 @@ impl Interpreter {
                             print!("{s}");
                         }
                         Printable::ExpressionNode(expression) => {
-                            let v = self.calculate_expression(expression)?;
+                            let v: isize = self.calculate_expression(expression)?;
                             print!("{v}");
                         }
                     }
                 }
+                println!("");
                 self.statement_index += 1;
             }
             Statement::If(if_statement) => {
-                let IfStatement { boolean_expr, then_statement } = &**if_statement;
+                let IfStatement {
+                    boolean_expr,
+                    then_statement,
+                } = &**if_statement;
                 let condition = self.calculate_boolean_expression(&boolean_expr.content)?;
                 if condition == true {
                     self.interpret_statement(&then_statement.content)?;
+                } else {
+                    self.statement_index += 1;
                 }
-
-                self.statement_index += 1;
-
             }
         }
         Ok(())
-
     }
 
     fn interpret(&mut self) -> Result<()> {
-        let Line {
-            statement,
-            ..
-        } = &self.program[self.statement_index];
+        let Line { statement, .. } = &self.program[self.statement_index];
 
         let content = &statement.clone().content;
         self.interpret_statement(content)
@@ -171,8 +170,8 @@ mod tests {
 
     #[test]
     pub fn test_interpreter() {
-        let lines = crate::parser::parse_file("Examples/factorial.bas").unwrap();
-        let _interpreter: Interpreter = Interpreter::new(lines);
-        println!("ende")
+        let lines = crate::parser::parse_file("Examples/fib.bas").unwrap();
+        let mut nano_interpreter = Interpreter::new(lines);
+        nano_interpreter.run().unwrap();
     }
 }
