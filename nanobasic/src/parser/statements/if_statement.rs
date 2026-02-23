@@ -29,8 +29,8 @@ pub struct BooleanExpression {
 #[allow(unused)]
 #[derive(Debug, PartialEq)]
 pub struct IfStatement {
-    boolean_expr: Node<BooleanExpression>,
-    then_statement: Node<Statement>,
+    pub boolean_expr: Node<BooleanExpression>,
+    pub then_statement: Node<Statement>,
 }
 
 fn parse_relational_operator<'a, I>(tokens: &mut Peekable<I>) -> Result<RelationalOperator>

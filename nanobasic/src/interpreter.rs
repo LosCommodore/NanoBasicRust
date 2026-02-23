@@ -1,11 +1,13 @@
-use crate::parser::Node;
+use crate::parser::statements::print_statment::Printable;
 use crate::parser::{
     Line,
     expressions::{BinaryOperator, Expression, UnaryOperator},
     statements::{Statement, let_statment::LetStatement},
 };
+use crate::parser::{Node };
 use std::collections::HashMap;
 use thiserror::Error;
+use crate::parser::statements::if_statement::{BooleanExpression, IfStatement, RelationalOperator};
 
 #[derive(Error, Debug)]
 pub enum InterpreterError {
@@ -38,6 +40,23 @@ impl Interpreter {
         }
     }
 
+    fn calculate_boolean_expression(&self, expression: &BooleanExpression) -> Result<bool> {
+        let left = self.calculate_expression(&expression.left_expr.content)?;
+        let right = self.calculate_expression(&expression.right_expr.content)?;
+        
+        use RelationalOperator::*;
+
+        let result  = match expression.operator {
+            Equal => { left == right }
+            Greater =>  { left > right }
+            GreaterEqual =>  { left >= right }
+            Less =>  { left < right }
+            LessEqual =>  { left <= right }
+            NotEqual => { left != right }
+        };
+        Ok(result)
+    }
+
     fn calculate_expression(&self, expression: &Expression) -> Result<isize> {
         use Expression::*;
         let value = match expression {
@@ -66,12 +85,8 @@ impl Interpreter {
         Ok(value)
     }
 
-    fn interpret(&mut self) -> Result<()> {
-        let Line {
-            statement: Node { content, .. },
-            ..
-        } = &self.program[self.statement_index];
-        match content {
+    fn interpret_statement(&mut self, statement: &Statement)-> Result<()> {
+        match statement {
             Statement::Let(let_stmt) => {
                 let LetStatement { name, expression } = &**let_stmt;
                 let value = self.calculate_expression(&expression.content)?;
@@ -89,7 +104,7 @@ impl Interpreter {
                     .position(|line| line.line_id == line_id as usize)
                     .ok_or(InterpreterError::InvalidGoto(line_id))?;
 
-                if let Statement::GoSub { .. } = content {
+                if let Statement::GoSub { .. } = statement {
                     self.subroutine_stack.push(self.statement_index);
                 };
                 self.statement_index = new_index;
@@ -102,10 +117,44 @@ impl Interpreter {
 
                 self.statement_index = index;
             }
-            Statement::If(..) => {}
-            Statement::Print(..) => {}
+            Statement::Print(node_printable) => {
+                let printables = &**node_printable;
+                for Node { content, .. } in printables {
+                    match content {
+                        Printable::String(s) => {
+                            print!("{s}");
+                        }
+                        Printable::ExpressionNode(expression) => {
+                            let v = self.calculate_expression(expression)?;
+                            print!("{v}");
+                        }
+                    }
+                }
+                self.statement_index += 1;
+            }
+            Statement::If(if_statement) => {
+                let IfStatement { boolean_expr, then_statement } = &**if_statement;
+                let condition = self.calculate_boolean_expression(&boolean_expr.content)?;
+                if condition == true {
+                    self.interpret_statement(&then_statement.content)?;
+                }
+
+                self.statement_index += 1;
+
+            }
         }
         Ok(())
+
+    }
+
+    fn interpret(&mut self) -> Result<()> {
+        let Line {
+            statement,
+            ..
+        } = &self.program[self.statement_index];
+
+        let content = &statement.clone().content;
+        self.interpret_statement(content)
     }
 
     pub fn run(&mut self) -> Result<()> {
