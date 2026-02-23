@@ -1,7 +1,7 @@
 use super::Node;
 use crate::parser::expressions::{Expression, parse_expression};
 use crate::tokenizer::{Token, TokenType};
-use crate::{ParseError,Result};
+use crate::{ParseError, Result};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -17,23 +17,25 @@ impl LetStatement {
         I: Iterator<Item = &'a Token>,
     {
         // - Variable
-        let mut token = tokens
-            .next()
-            .ok_or(ParseError::UnexpectedEOF)?;
+        let mut token = tokens.next().ok_or(ParseError::UnexpectedEOF)?;
 
         let mut position = token.position;
 
         let TokenType::Variable(var_name) = &token.kind else {
-            return Err(ParseError::WrongToken { expected: "Variable".to_string(), actual: format!("{:?}",token.kind)});
+            return Err(ParseError::WrongToken {
+                expected: "Variable".to_string(),
+                actual: format!("{:?}", token.kind),
+            });
         };
 
         // Token Equal
-        token = tokens
-            .next()
-            .ok_or(ParseError::UnexpectedEOF)?;
+        token = tokens.next().ok_or(ParseError::UnexpectedEOF)?;
 
         let TokenType::Equal = &token.kind else {
-            return Err(ParseError::WrongToken { expected: "Variable".to_string(), actual: format!("{:?}",token.kind)});
+            return Err(ParseError::WrongToken {
+                expected: "Variable".to_string(),
+                actual: format!("{:?}", token.kind),
+            });
         };
 
         // create numeric Expression here

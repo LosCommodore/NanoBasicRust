@@ -1,10 +1,10 @@
 use super::super::expressions::Expression;
 use super::Node;
+use crate::{ParseError, Result};
 use crate::{
     parser::expressions::parse_expression,
     tokenizer::{Position, Token, TokenType},
 };
-use crate::{ParseError,Result};
 use serde::Serialize;
 use std::iter::Peekable;
 

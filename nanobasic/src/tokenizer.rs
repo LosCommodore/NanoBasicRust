@@ -1,8 +1,7 @@
+use crate::{ParseError, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::Serialize;
-use crate::{ParseError,Result};
-
 
 #[derive(Serialize, Debug, PartialEq)]
 pub enum TokenType {

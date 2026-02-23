@@ -2,7 +2,7 @@
 use super::{Node, Statement};
 use crate::parser::expressions::{Expression, parse_expression};
 use crate::tokenizer::{Token, TokenType};
-use crate::{ParseError,Result};
+use crate::{ParseError, Result};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -47,7 +47,12 @@ where
         TokenType::GreaterEqual => GreaterEqual,
         TokenType::Less => Less,
         TokenType::LessEqual => LessEqual,
-        _ => return Err(ParseError::WrongToken { expected: "relational operator".to_string(), actual: format!("{:?}",token.kind)})
+        _ => {
+            return Err(ParseError::WrongToken {
+                expected: "relational operator".to_string(),
+                actual: format!("{:?}", token.kind),
+            });
+        }
     };
 
     Ok(operator)
@@ -81,7 +86,10 @@ impl IfStatement {
         let mut position = boolean_expr.position;
         let then_token = tokens.next().ok_or(ParseError::UnexpectedEOF)?;
         if then_token.kind != TokenType::Then {
-            return Err(ParseError::WrongToken { expected: "THEN".to_string(), actual: format!("{:?}",then_token.kind)})
+            return Err(ParseError::WrongToken {
+                expected: "THEN".to_string(),
+                actual: format!("{:?}", then_token.kind),
+            });
         };
         let then_statement = Statement::parse(tokens)?;
         position.col_end = 0; // TODO: fix

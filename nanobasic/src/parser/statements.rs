@@ -7,7 +7,7 @@ use crate::parser::expressions::parse_expression;
 use crate::tokenizer::Position;
 use crate::tokenizer::Token;
 use crate::tokenizer::TokenType;
-use crate::{ParseError,Result};
+use crate::{ParseError, Result};
 use if_statement::IfStatement;
 use let_statment::LetStatement;
 use print_statment::{Printables, parse_printables};
@@ -73,7 +73,12 @@ impl Statement {
                 position: token.position,
                 content: Return,
             },
-            _ => return Err(ParseError::WrongToken{expected:"Statement".to_string(), actual:format!("{:?}",token.kind)})
+            _ => {
+                return Err(ParseError::WrongToken {
+                    expected: "Statement".to_string(),
+                    actual: format!("{:?}", token.kind),
+                });
+            }
         };
         Ok(statement)
     }

@@ -1,15 +1,14 @@
 pub mod expressions;
 pub mod statements;
 
-use crate::{Result, ParseError};
 use crate::parser::statements::Statement;
 use crate::tokenizer::{Position, Token, TokenType, tokenize};
+use crate::{ParseError, Result};
 use serde::Serialize;
-use std::iter::Peekable;
-use std::path::Path;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-
+use std::iter::Peekable;
+use std::path::Path;
 
 /// Represents postion information in the code
 #[derive(Serialize, Debug, PartialEq)]
@@ -46,7 +45,10 @@ impl Line {
         let line_token = tokens.next().ok_or(ParseError::UnexpectedEOF)?;
 
         let TokenType::Number(line_id) = line_token.kind else {
-            return Err(ParseError::WrongToken { expected: "Line numer".to_string(), actual: format!("{:?}", line_token.kind)})
+            return Err(ParseError::WrongToken {
+                expected: "Line numer".to_string(),
+                actual: format!("{:?}", line_token.kind),
+            });
         };
 
         let statement = Statement::parse(tokens)?;
@@ -73,10 +75,12 @@ pub fn parse_file(path: impl AsRef<Path>) -> Result<Vec<Line>> {
     let path = path.as_ref();
 
     log::info!(r#"Opening file"{path:#?}""#);
-    let file = File::open(path)
-        .map_err(|e| ParseError::FileOpen { source: e , path:path.into() })?;
+    let file = File::open(path).map_err(|e| ParseError::FileOpen {
+        source: e,
+        path: path.into(),
+    })?;
     let reader = BufReader::new(file);
-    
+
     log::info!(r"Tokenizing");
     let lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
     let tokens = tokenize(&lines)?;

@@ -1,6 +1,6 @@
 use super::Node;
 use crate::tokenizer::{Position, Token, TokenType};
-use crate::{Result,ParseError};
+use crate::{ParseError, Result};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -49,9 +49,7 @@ pub fn parse_factor<'a, I>(tokens: &mut Peekable<I>) -> Result<Node<Expression>>
 where
     I: Iterator<Item = &'a Token>,
 {
-    let first_token = tokens
-        .next()
-        .ok_or(ParseError::UnexpectedEOF)?;
+    let first_token = tokens.next().ok_or(ParseError::UnexpectedEOF)?;
 
     let token = first_token;
     let this_node: Node<Expression> = match &token.kind {
@@ -68,10 +66,13 @@ where
         TokenType::OpenParen => {
             let inner_node: Node<Expression> = parse_expression(tokens)?;
 
-            let token = tokens.next().ok_or(ParseError::UnexpectedEOF)?; 
+            let token = tokens.next().ok_or(ParseError::UnexpectedEOF)?;
 
             let TokenType::CloseParen = token.kind else {
-                return Err(ParseError::WrongToken{expected:")".to_string(), actual:format!("{:?}",token.kind)});
+                return Err(ParseError::WrongToken {
+                    expected: ")".to_string(),
+                    actual: format!("{:?}", token.kind),
+                });
             };
 
             Node {
@@ -99,7 +100,12 @@ where
                 },
             }
         }
-        _ => return Err(ParseError::WrongToken { expected: "Numeric expression".to_string(), actual: format!("{:?}",token.kind) })
+        _ => {
+            return Err(ParseError::WrongToken {
+                expected: "Numeric expression".to_string(),
+                actual: format!("{:?}", token.kind),
+            });
+        }
     };
 
     Ok(this_node)
