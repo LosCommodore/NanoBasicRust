@@ -1,6 +1,8 @@
 use anyhow::Context;
 use anyhow::Result;
 use glob::glob;
+use nanobasic::interpreter::Interpreter;
+use nanobasic::parser;
 use nanobasic::tokenizer::{Token, tokenize};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -44,5 +46,23 @@ fn test_tokenize_and_parse_all_examples() {
         print!("---- Executing: {path:#?}");
         tokenize_and_parse(&path).unwrap();
         println!(" ✅");
+    }
+}
+
+#[test]
+pub fn test_interpret_all_examples() {
+    let mut p = TEST_DIR.to_string();
+    p.push_str("/*.bas");
+
+    let pattern = glob(&p).expect("invalid pattern");
+
+    for path_result in pattern {
+        let path = path_result.unwrap();
+        println!("---- Executing: {path:#?}");
+        let lines = parser::parse_file(&path).unwrap();
+        let mut nano_interpreter = Interpreter::new(lines);
+        nano_interpreter.run().unwrap();
+        println!("✅ -------------------------------------------------------------");
+        println!("")
     }
 }

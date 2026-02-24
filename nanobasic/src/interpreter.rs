@@ -105,7 +105,7 @@ impl Interpreter {
                     .ok_or(InterpreterError::InvalidGoto(line_id))?;
 
                 if let Statement::GoSub { .. } = statement {
-                    self.subroutine_stack.push(self.statement_index +1);
+                    self.subroutine_stack.push(self.statement_index + 1);
                 };
                 self.statement_index = new_index;
             }
@@ -119,18 +119,20 @@ impl Interpreter {
             }
             Statement::Print(node_printable) => {
                 let printables = &**node_printable;
+                let mut output = Vec::new();
                 for Node { content, .. } in printables {
                     match content {
                         Printable::String(s) => {
-                            print!("{s}");
+                            output.push(s.clone());
                         }
                         Printable::ExpressionNode(expression) => {
                             let v: isize = self.calculate_expression(expression)?;
-                            print!("{v}");
+                            output.push(v.to_string());
                         }
                     }
                 }
-                println!("");
+                let out_str = output.join("\t");
+                println!("{out_str}");
                 self.statement_index += 1;
             }
             Statement::If(if_statement) => {
@@ -162,17 +164,5 @@ impl Interpreter {
             self.interpret()?
         }
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::Interpreter;
-
-    #[test]
-    pub fn test_interpreter() {
-        let lines = crate::parser::parse_file("Examples/fib.bas").unwrap();
-        let mut nano_interpreter = Interpreter::new(lines);
-        nano_interpreter.run().unwrap();
     }
 }
