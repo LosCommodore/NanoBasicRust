@@ -62,7 +62,7 @@ impl Interpreter {
         let value = match expression {
             BinaryOperation(binary_op) => {
                 let left = self.calculate_expression(&binary_op.left.content)?;
-                let right = self.calculate_expression(&binary_op.left.content)?;
+                let right = self.calculate_expression(&binary_op.right.content)?;
                 match binary_op.operator {
                     BinaryOperator::Devide => left / right,
                     BinaryOperator::Multiply => left * right,
@@ -105,7 +105,7 @@ impl Interpreter {
                     .ok_or(InterpreterError::InvalidGoto(line_id))?;
 
                 if let Statement::GoSub { .. } = statement {
-                    self.subroutine_stack.push(self.statement_index);
+                    self.subroutine_stack.push(self.statement_index +1);
                 };
                 self.statement_index = new_index;
             }
@@ -150,7 +150,8 @@ impl Interpreter {
     }
 
     fn interpret(&mut self) -> Result<()> {
-        let Line { statement, .. } = &self.program[self.statement_index];
+        let Line { statement, line_id } = &self.program[self.statement_index];
+        log::debug!("Intrpreting line: {line_id}");
 
         let content = &statement.clone().content;
         self.interpret_statement(content)
