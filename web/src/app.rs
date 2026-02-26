@@ -1,4 +1,13 @@
 use leptos::prelude::*;
+use nanobasic::interpreter::Interpreter;
+use nanobasic::parser;
+
+fn run_nano() {
+    let path = "../nanobasic/Examples/factorial.bas";
+    let lines = parser::parse_file(&path).unwrap();
+    let mut nano_interpreter = Interpreter::new(lines, None);
+    nano_interpreter.run().unwrap();
+}
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -15,5 +24,11 @@ pub fn App() -> impl IntoView {
             "Double count: "
             {move || count.get() * 2}
         </p>
+
+        <button
+            on:click= |_| run_nano()
+        >
+            Run interpreter
+        </button>
     }
 }
