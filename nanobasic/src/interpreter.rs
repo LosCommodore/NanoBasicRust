@@ -7,7 +7,9 @@ use crate::parser::{
     statements::{Statement, let_statment::LetStatement},
 };
 use std::collections::HashMap;
+use std::io::Write;
 use thiserror::Error;
+use std::io::{self, BufWriter};
 
 #[derive(Error, Debug)]
 pub enum InterpreterError {
@@ -19,6 +21,9 @@ pub enum InterpreterError {
 
     #[error("RETURN without GOSUB")]
     ReturnWithoutGosub,
+
+    #[error("Write to output failed")]
+    OutputError(#[from] io::Error)
 }
 
 pub type Result<T> = std::result::Result<T, InterpreterError>;
@@ -28,15 +33,21 @@ pub struct Interpreter {
     variables: HashMap<String, isize>,
     statement_index: usize,
     subroutine_stack: Vec<usize>,
+    output: Box<dyn Write>,
 }
 
 impl Interpreter {
-    pub fn new(program: Vec<Line>) -> Self {
+    pub fn new(program: Vec<Line>, output: Option<Box<dyn Write>> ) -> Self {
+        let output = output.unwrap_or(
+            Box::new(BufWriter::new(io::stdout()))
+        );
+        
         Interpreter {
             program,
             variables: HashMap::new(),
             statement_index: 0,
             subroutine_stack: Vec::new(),
+            output
         }
     }
 
@@ -132,7 +143,8 @@ impl Interpreter {
                     }
                 }
                 let out_str = output.join("\t");
-                println!("{out_str}");
+                self.output.write_all(out_str.as_bytes())?;
+                self.output.flush()?;
                 self.statement_index += 1;
             }
             Statement::If(if_statement) => {
