@@ -2,7 +2,7 @@
 members = [
     "nanobasic",
     "app"
-]
+, "web"]
 default-members = ["app"]
 
 resolver = "3"
