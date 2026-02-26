@@ -9,7 +9,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::iter::Peekable;
 use std::path::Path;
-use std::sync::Arc;
+use std::rc::Rc;
 
 /// Represents postion information in the code
 #[derive(Serialize, Debug, PartialEq)]
@@ -34,7 +34,7 @@ impl<T> Node<T> {
 #[derive(Serialize, Debug, PartialEq)]
 pub struct Line {
     pub line_id: usize,
-    pub statement: Arc<Node<Statement>>,
+    pub statement: Rc<Node<Statement>>,
 }
 
 /// Parse a line from tokens
@@ -54,7 +54,7 @@ impl Line {
 
         let statement = Statement::parse(tokens)?;
         Ok(Line {
-            statement: Arc::new(statement),
+            statement: Rc::new(statement),
             line_id,
         })
     }
