@@ -9,7 +9,7 @@ use crate::parser::{
 use std::collections::HashMap;
 use std::io::Write;
 use thiserror::Error;
-use std::io::{self, BufWriter};
+use std::io::{self};
 
 #[derive(Error, Debug)]
 pub enum InterpreterError {
@@ -28,19 +28,16 @@ pub enum InterpreterError {
 
 pub type Result<T> = std::result::Result<T, InterpreterError>;
 
-pub struct Interpreter {
+pub struct Interpreter<'a> {
     program: Vec<Line>,
     variables: HashMap<String, isize>,
     statement_index: usize,
     subroutine_stack: Vec<usize>,
-    output: Box<dyn Write>,
+    output: &'a mut dyn Write,
 }
 
-impl Interpreter {
-    pub fn new(program: Vec<Line>, output: Option<Box<dyn Write>> ) -> Self {
-        let output = output.unwrap_or(
-            Box::new(BufWriter::new(io::stdout()))
-        );
+impl<'a>  Interpreter<'a>  {
+    pub fn new(program: Vec<Line>, output: &'a mut dyn Write) -> Self {
         
         Interpreter {
             program,
@@ -143,7 +140,7 @@ impl Interpreter {
                     }
                 }
                 let out_str = output.join("\t");
-                self.output.write_all(out_str.as_bytes())?;
+                writeln!(self.output,"{out_str}")?;
                 self.output.flush()?;
                 self.statement_index += 1;
             }
