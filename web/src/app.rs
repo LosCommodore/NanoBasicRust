@@ -8,17 +8,17 @@ use nanobasic::interpreter::Interpreter;
 // here, update the list accordingly (a build script could generate this, but
 // for simplicity we write them out).
 const PROGRAMS: &[(&str, &str)] = &[
-    ("Factorial", include_str!(r"../../../Examples/factorial.bas")),
-    ("Fibonacci", include_str!(r"../../../Examples/fib.bas")),
-    ("GCD", include_str!(r"../../../Examples/gcd.bas")),
-    ("Gosub", include_str!(r"../../../Examples/gosub.bas")),
-    ("Goto", include_str!(r"../../../Examples/goto.bas")),
-    ("If1", include_str!(r"../../../Examples/if1.bas")),
-    ("If2", include_str!(r"../../../Examples/if2.bas")),
-    ("Print1", include_str!(r"../../../Examples/print1.bas")),
-    ("Print2", include_str!(r"../../../Examples/print2.bas")),
-    ("Print3", include_str!(r"../../../Examples/print3.bas")),
-    ("Variables", include_str!(r"../../../Examples/variables.bas")),
+    ("Factorial", include_str!(r"../../nanobasic/Examples/factorial.bas")),
+    ("Fibonacci", include_str!(r"../../nanobasic/Examples/fib.bas")),
+    ("GCD", include_str!(r"../../nanobasic/Examples/gcd.bas")),
+    ("Gosub", include_str!(r"../../nanobasic/Examples/gosub.bas")),
+    ("Goto", include_str!(r"../../nanobasic/Examples/goto.bas")),
+    ("If1", include_str!(r"../../nanobasic/Examples/if1.bas")),
+    ("If2", include_str!(r"../../nanobasic/Examples/if2.bas")),
+    ("Print1", include_str!(r"../../nanobasic/Examples/print1.bas")),
+    ("Print2", include_str!(r"../../nanobasic/Examples/print2.bas")),
+    ("Print3", include_str!(r"../../nanobasic/Examples/print3.bas")),
+    ("Variables", include_str!(r"../../nanobasic/Examples/variables.bas")),
 ];
 
 /// run the interpreter on a blob of source text and return the output
