@@ -46,16 +46,14 @@ jobs:
 
       - name: Build with Trunk
         working-directory: ./web 
-
-        # use the repository name for the public url so pages are served from
-        # https://<user>.github.io/<repo>/
         run: |
           REPO_NAME=${GITHUB_REPOSITORY#*/}
           trunk build --release --public-url "/${REPO_NAME}/"
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: web/dist
 
   deploy:
     needs: build
