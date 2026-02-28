@@ -48,13 +48,12 @@ pub fn App() -> impl IntoView {
     // original value out of scope.  we need separate clones for each handler
     // because Rust moves captured variables into a `move` closure.
     let programs_for_change = programs.clone();
-    let programs_for_click = programs.clone();
   
     // index of the currently selected program
     let (selected_idx, set_selected_idx) = signal(0usize);
 
     view! {
-        <div class="px-8 pt-8 max-w-4xl h-screen flex flex-col overflow-hidden min-h-0">
+        <div class="px-8 pt-8 w-full h-screen flex flex-col overflow-hidden min-h-0 min-w-0">
             <h1 class="text-2xl font-bold mb-4">"Nanobasic Playground"</h1>
             <div class="flex items-center space-x-4 mb-4">
                 <label for="programs">"Choose program:"</label>
@@ -65,7 +64,7 @@ pub fn App() -> impl IntoView {
                         if let Ok(idx) = event_target_value(&ev).parse::<usize>() {
                             set_selected_idx.set(idx);
                         }
-                        // update preview text (I assume you want the source, not name)
+                                // update editable text to the chosen program
                         let src = programs_for_change[selected_idx.get()].1;
                         set_active_program.set(src.to_string());
                     }
@@ -77,9 +76,9 @@ pub fn App() -> impl IntoView {
                 <button
                     class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded shadow"
                     on:click=move |_| {
-                        // use pre-cloned Rc
-                        let code = programs_for_click[selected_idx.get()].1;
-                        match run_nano(code) {
+                        // run whatever is currently in the editable source box
+                        let code = active_program.get();
+                        match run_nano(&code) {
                             Ok(txt) => set_output.set(txt),
                             Err(e)  => set_output.set(format!("error: {e:?}")),
                         }
@@ -89,18 +88,24 @@ pub fn App() -> impl IntoView {
                 </button>
             </div>
 
-        // program section with title
-        <div class="mb-4 flex-1 flex flex-col min-h-0">
+        // program section with title (now editable)
+        <div class="mb-4 flex-1 flex flex-col min-h-0 min-w-0">
             <h2 class="text-xl font-semibold mb-2">"Program source"</h2>
-            <pre class="program-source bg-blue-50 border border-blue-300 rounded p-4 text-sm overflow-auto flex-1">
-                { active_program }
-            </pre>
+            <textarea
+                class="w-full bg-blue-50 border border-blue-300 rounded p-4 text-sm flex-1 resize-none focus:outline-none"
+                on:input=move |ev| {
+                    let val = event_target_value(&ev);
+                    set_active_program.set(val);
+                }
+            >
+                {active_program}
+            </textarea>
         </div>
 
         // output section with title
-        <div class="mb-4 flex-1 flex flex-col min-h-0">
+        <div class="mb-4 flex-1 flex flex-col min-h-0 min-w-0">
             <h2 class="text-xl font-semibold mb-2">"Program output"</h2>
-            <pre class="nano-output bg-gray-50 border border-gray-300 rounded p-4 overflow-y-auto text-sm flex-1">
+            <pre class="nano-output w-full bg-gray-50 border border-gray-300 rounded p-4 overflow-y-auto text-sm flex-1">
                 {output}
             </pre>
         </div>
