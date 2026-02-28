@@ -42,7 +42,7 @@ jobs:
         # https://<user>.github.io/<repo>/
         run: |
           REPO_NAME=${GITHUB_REPOSITORY#*/}
-          ./trunk build --release --public-url "/${REPO_NAME}/"
+          trunk build --release --public-url "/${REPO_NAME}/"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
