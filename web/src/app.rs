@@ -3,9 +3,23 @@ use anyhow::Result;
 use leptos::prelude::*;
 use nanobasic::interpreter::Interpreter;
 
-// keep a few programs around; you can add more paths/names as needed
-const FIB_BAS: &str = include_str!(r"../../../Examples/fib.bas");
-const FACTORIAL_BAS: &str = include_str!(r"../../../Examples/factorial.bas");
+// include every BASIC file in the top‑level Examples directory; the
+// tuple elements are (display name, source code).  When you add/remove files
+// here, update the list accordingly (a build script could generate this, but
+// for simplicity we write them out).
+const PROGRAMS: &[(&str, &str)] = &[
+    ("Factorial", include_str!(r"../../../Examples/factorial.bas")),
+    ("Fibonacci", include_str!(r"../../../Examples/fib.bas")),
+    ("GCD", include_str!(r"../../../Examples/gcd.bas")),
+    ("Gosub", include_str!(r"../../../Examples/gosub.bas")),
+    ("Goto", include_str!(r"../../../Examples/goto.bas")),
+    ("If1", include_str!(r"../../../Examples/if1.bas")),
+    ("If2", include_str!(r"../../../Examples/if2.bas")),
+    ("Print1", include_str!(r"../../../Examples/print1.bas")),
+    ("Print2", include_str!(r"../../../Examples/print2.bas")),
+    ("Print3", include_str!(r"../../../Examples/print3.bas")),
+    ("Variables", include_str!(r"../../../Examples/variables.bas")),
+];
 
 /// run the interpreter on a blob of source text and return the output
 fn run_nano(source: &str) -> Result<String> {
@@ -23,10 +37,7 @@ pub fn App() -> impl IntoView {
     let (active_program, set_active_program) = signal(String::new());
 
     // list of programs we can execute (name, source text)
-    let programs: Rc<Vec<(&str, &str)>> = Rc::new(vec![
-        ("Fibonacci", FIB_BAS),
-        ("Factorial", FACTORIAL_BAS),
-    ]);
+    let programs: Rc<Vec<(&str, &str)>> = Rc::new(PROGRAMS.iter().copied().collect());
 
     // pre-populate the active_program with the first entry
     if let Some((_, src)) = programs.get(0) {
