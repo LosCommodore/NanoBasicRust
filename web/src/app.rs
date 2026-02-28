@@ -43,7 +43,7 @@ pub fn App() -> impl IntoView {
     let (selected_idx, set_selected_idx) = signal(0usize);
 
     view! {
-        <div class="ml-8 mt-8 max-w-4xl h-screen flex flex-col">
+        <div class="px-8 pt-8 max-w-4xl h-screen flex flex-col overflow-hidden min-h-0">
             <h1 class="text-2xl font-bold mb-4">"Nanobasic Playground"</h1>
             <div class="flex items-center space-x-4 mb-4">
                 <label for="programs">"Choose program:"</label>
@@ -79,7 +79,7 @@ pub fn App() -> impl IntoView {
             </div>
 
         // program section with title
-        <div class="mb-4 flex-1 flex flex-col">
+        <div class="mb-4 flex-1 flex flex-col min-h-0">
             <h2 class="text-xl font-semibold mb-2">"Program source"</h2>
             <pre class="program-source bg-blue-50 border border-blue-300 rounded p-4 text-sm overflow-auto flex-1">
                 { active_program }
@@ -87,9 +87,9 @@ pub fn App() -> impl IntoView {
         </div>
 
         // output section with title
-        <div class="mb-4 flex-1 flex flex-col">
+        <div class="mb-4 flex-1 flex flex-col min-h-0">
             <h2 class="text-xl font-semibold mb-2">"Program output"</h2>
-            <pre class="nano-output bg-gray-50 border border-gray-300 rounded p-4 overflow-auto text-sm flex-1">
+            <pre class="nano-output bg-gray-50 border border-gray-300 rounded p-4 overflow-y-auto text-sm flex-1">
                 {output}
             </pre>
         </div>
