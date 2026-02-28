@@ -3,7 +3,7 @@ use anyhow::Result;
 use glob::glob;
 use nanobasic::interpreter::Interpreter;
 use nanobasic::parser;
-use nanobasic::tokenizer::{Token, tokenize};
+use nanobasic::parser::tokenizer::{Token, tokenize};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -60,7 +60,7 @@ pub fn test_interpret_all_examples() {
         let path = path_result.unwrap();
         println!("---- Executing: {path:#?}");
         let lines = parser::parse_file(&path).unwrap();
-        let mut stdout= std::io::stdout(); 
+        let mut stdout = std::io::stdout();
         let mut nano_interpreter = Interpreter::from_ast(lines, &mut stdout);
         nano_interpreter.run().unwrap();
         println!("✅ -------------------------------------------------------------");

@@ -1,5 +1,5 @@
+use super::tokenizer::tokenize;
 use super::{Line, Result};
-use crate::tokenizer::tokenize;
 #[test]
 fn test_lines() -> Result<()> {
     // -- Read input

@@ -1,7 +1,7 @@
 use super::Node;
 use crate::parser::expressions::{Expression, parse_expression};
-use crate::tokenizer::{Token, TokenType};
-use crate::{ParseError, Result};
+use crate::parser::tokenizer::{Token, TokenType};
+use super::{Result, ParseError};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -53,7 +53,7 @@ impl LetStatement {
 #[cfg(test)]
 mod tests {
     use super::LetStatement;
-    use crate::tokenizer::{Position, Token, TokenType};
+    use crate::parser::tokenizer::{Position, Token, TokenType};
 
     fn dummy_token(tk: TokenType) -> Token {
         Token {

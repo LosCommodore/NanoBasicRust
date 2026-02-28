@@ -1,8 +1,8 @@
 //use std::iter::Peekable;
 use super::{Node, Statement};
 use crate::parser::expressions::{Expression, parse_expression};
-use crate::tokenizer::{Token, TokenType};
-use crate::{ParseError, Result};
+use crate::parser::tokenizer::{Token, TokenType};
+use super::{Result, ParseError};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -110,7 +110,7 @@ impl IfStatement {
 mod tests {
     use super::IfStatement;
     use super::{Result, parse_boolean_expression};
-    use crate::tokenizer::tokenize;
+    use crate::parser::tokenizer::tokenize;
 
     #[test]
     fn test_boolean_expression() -> Result<()> {
@@ -144,7 +144,7 @@ mod tests {
 
             println!("* Parsing");
             let mut iter_token = tokens.iter().peekable();
-            let _if_token: Option<&crate::tokenizer::Token> = iter_token.next();
+            let _if_token: Option<&crate::parser::tokenizer::Token> = iter_token.next();
             let result = IfStatement::parse_node(&mut iter_token)?;
             println!("{result:#?}");
         }

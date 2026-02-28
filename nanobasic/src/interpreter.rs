@@ -1,16 +1,17 @@
-use crate::parser::{Node, parse_tokens};
 use crate::parser::statements::if_statement::{BooleanExpression, IfStatement, RelationalOperator};
 use crate::parser::statements::print_statment::Printable;
+use crate::parser::tokenizer::tokenize;
 use crate::parser::{
     Line,
     expressions::{BinaryOperator, Expression, UnaryOperator},
     statements::{Statement, let_statment::LetStatement},
 };
+use crate::parser::{Node, parse_tokens};
 use std::collections::HashMap;
 use std::io::Write;
-use thiserror::Error;
 use std::io::{self};
-use crate::tokenizer::tokenize;
+use thiserror::Error;
+use super::parser::ParseError;
 
 #[derive(Error, Debug)]
 pub enum InterpreterError {
@@ -27,7 +28,7 @@ pub enum InterpreterError {
     OutputError(#[from] io::Error),
 
     #[error["Error while parsing the program"]]
-    ParseErrorError(#[from] super::ParseError),
+    ParseErrorError(#[from] ParseError),
 }
 
 pub type Result<T> = std::result::Result<T, InterpreterError>;
@@ -40,14 +41,14 @@ pub struct Interpreter<'a> {
     output: &'a mut dyn Write,
 }
 
-impl<'a>  Interpreter<'a>  {
+impl<'a> Interpreter<'a> {
     /// Create interpreter form AST = "Abstact Syntax Tree"
-    pub fn from_string(program: String, output: &'a mut dyn Write) -> Result<Self> { 
+    pub fn from_string(program: String, output: &'a mut dyn Write) -> Result<Self> {
         let lines = program
             .lines()
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
-        
+
         let tokens = tokenize(&lines)?;
         let ast = parse_tokens(&tokens)?;
 
@@ -56,18 +57,18 @@ impl<'a>  Interpreter<'a>  {
             variables: HashMap::new(),
             statement_index: 0,
             subroutine_stack: Vec::new(),
-            output
+            output,
         };
         Ok(self_)
     }
 
-    pub fn from_ast(program: Vec<Line>, output: &'a mut dyn Write) -> Self { 
+    pub fn from_ast(program: Vec<Line>, output: &'a mut dyn Write) -> Self {
         Interpreter {
             program,
             variables: HashMap::new(),
             statement_index: 0,
             subroutine_stack: Vec::new(),
-            output
+            output,
         }
     }
 
@@ -163,7 +164,7 @@ impl<'a>  Interpreter<'a>  {
                     }
                 }
                 let out_str = output.join("\t");
-                writeln!(self.output,"{out_str}")?;
+                writeln!(self.output, "{out_str}")?;
                 self.output.flush()?;
                 self.statement_index += 1;
             }

@@ -1,6 +1,6 @@
 use super::Node;
-use crate::tokenizer::{Position, Token, TokenType};
-use crate::{ParseError, Result};
+use super::tokenizer::{Position, Token, TokenType};
+use super::{Result, ParseError};
 use serde::Serialize;
 use std::iter::Peekable;
 
@@ -214,7 +214,7 @@ where
 mod tests {
     use super::Result;
     use crate::parser::expressions::{parse_expression, parse_term};
-    use crate::tokenizer::{Token, tokenize};
+    use crate::parser::tokenizer::{Token, tokenize};
 
     #[test]
     pub fn test_parse_term_multiply() -> Result<()> {

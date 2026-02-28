@@ -1,9 +1,9 @@
 use super::super::expressions::Expression;
 use super::Node;
-use crate::{ParseError, Result};
+use super::{Result, ParseError};
 use crate::{
     parser::expressions::parse_expression,
-    tokenizer::{Position, Token, TokenType},
+    parser::tokenizer::{Position, Token, TokenType},
 };
 use serde::Serialize;
 use std::iter::Peekable;
@@ -72,7 +72,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::Result;
-    use crate::tokenizer::tokenize;
+    use crate::parser::tokenizer::tokenize;
 
     #[test]
     fn test_parse_printable() -> Result<()> {
