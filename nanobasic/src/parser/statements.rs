@@ -7,7 +7,7 @@ use super::expressions::parse_expression;
 use super::tokenizer::Position;
 use super::tokenizer::Token;
 use super::tokenizer::TokenType;
-use super::{Result, ParseError};
+use super::{ParseError, Result};
 use if_statement::IfStatement;
 use let_statment::LetStatement;
 use print_statment::{Printables, parse_printables};

@@ -1,6 +1,6 @@
 use super::Node;
 use super::tokenizer::{Position, Token, TokenType};
-use super::{Result, ParseError};
+use super::{ParseError, Result};
 use serde::Serialize;
 use std::iter::Peekable;
 

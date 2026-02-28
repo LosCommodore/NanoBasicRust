@@ -1,6 +1,6 @@
 use super::super::expressions::Expression;
 use super::Node;
-use super::{Result, ParseError};
+use super::{ParseError, Result};
 use crate::{
     parser::expressions::parse_expression,
     parser::tokenizer::{Position, Token, TokenType},

@@ -6,12 +6,12 @@ use self::tokenizer::{Position, Token, TokenType, tokenize};
 use crate::parser::statements::Statement;
 use serde::Serialize;
 use std::fs::File;
+use std::io;
 use std::io::{BufRead, BufReader};
 use std::iter::Peekable;
 use std::path::Path;
-use std::rc::Rc;
-use std::io;
 use std::path::PathBuf;
+use std::rc::Rc;
 use std::result;
 use thiserror::Error;
 

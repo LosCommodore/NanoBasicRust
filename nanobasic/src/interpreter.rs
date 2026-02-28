@@ -1,3 +1,4 @@
+use super::parser::ParseError;
 use crate::parser::statements::if_statement::{BooleanExpression, IfStatement, RelationalOperator};
 use crate::parser::statements::print_statment::Printable;
 use crate::parser::tokenizer::tokenize;
@@ -11,7 +12,6 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::io::{self};
 use thiserror::Error;
-use super::parser::ParseError;
 
 #[derive(Error, Debug)]
 pub enum InterpreterError {

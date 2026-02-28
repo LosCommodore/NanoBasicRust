@@ -1,8 +1,8 @@
 //use std::iter::Peekable;
 use super::{Node, Statement};
+use super::{ParseError, Result};
 use crate::parser::expressions::{Expression, parse_expression};
 use crate::parser::tokenizer::{Token, TokenType};
-use super::{Result, ParseError};
 use serde::Serialize;
 use std::iter::Peekable;
 

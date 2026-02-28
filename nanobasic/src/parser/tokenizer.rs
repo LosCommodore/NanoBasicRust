@@ -1,4 +1,4 @@
-use super::{Result, ParseError};
+use super::{ParseError, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::Serialize;
