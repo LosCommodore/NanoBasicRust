@@ -14,15 +14,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      - name: Cache trunk binary
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/trunk
+          key: trunk-${{ runner.os }}
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
       - name: Install Trunk
-        run: wget -qO- https://github.com | tar -xzf-
+        run: |
+          # trunk is a cargo binary; install via cargo so we get the correct version
+          cargo install --locked trunk
+
       - name: Build with Trunk
-        # WICHTIG: Ersetze 'REPOS_NAME' durch deinen Repository-Namen für korrekte Pfade
-        run: ./trunk build --release --public-url /REPOS_NAME/ 
+        # use the repository name for the public url so pages are served from
+        # https://<user>.github.io/<repo>/
+        run: |
+          REPO_NAME=${GITHUB_REPOSITORY#*/}
+          ./trunk build --release --public-url "/${REPO_NAME}/"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
