@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["master"]
+    branches: ["release"]
 
 permissions:
   contents: read
@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Cache cargo registry
         uses: actions/cache@v3
         with:
@@ -23,17 +24,21 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
+
       - name: Cache trunk binary
         uses: actions/cache@v3
         with:
           path: ~/.cargo/bin/trunk
           key: trunk-${{ runner.os }}
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
 
-        
+      - name: Run tests
+        run: cargo test --verbose
+      
       - name: Install Trunk
         run: |
           # Prüft, ob trunk bereits im Pfad ist (vom Cache geladen)
