@@ -28,9 +28,15 @@ pub fn App() -> impl IntoView {
         ("Factorial", FACTORIAL_BAS),
     ]);
 
+    // pre-populate the active_program with the first entry
+    if let Some((_, src)) = programs.get(0) {
+        set_active_program.set(src.to_string());
+    }
+
     // prepare clones for the closures; Rc::clone is cheap and prevents moving the
     // original value out of scope.
     let programs_for_change = programs.clone();
+    let programs_for_click = programs.clone();
   
     // index of the currently selected program
     let (selected_idx, set_selected_idx) = signal(0usize);
