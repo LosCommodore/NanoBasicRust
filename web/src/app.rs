@@ -1,24 +1,42 @@
-use std::rc::Rc;
 use anyhow::Result;
 use leptos::prelude::*;
 use nanobasic::interpreter::Interpreter;
+use std::rc::Rc;
 
 // include every BASIC file in the top‑level Examples directory; the
 // tuple elements are (display name, source code).  When you add/remove files
 // here, update the list accordingly (a build script could generate this, but
 // for simplicity we write them out).
 const PROGRAMS: &[(&str, &str)] = &[
-    ("Factorial", include_str!(r"../../nanobasic/Examples/factorial.bas")),
-    ("Fibonacci", include_str!(r"../../nanobasic/Examples/fib.bas")),
+    (
+        "Factorial",
+        include_str!(r"../../nanobasic/Examples/factorial.bas"),
+    ),
+    (
+        "Fibonacci",
+        include_str!(r"../../nanobasic/Examples/fib.bas"),
+    ),
     ("GCD", include_str!(r"../../nanobasic/Examples/gcd.bas")),
     ("Gosub", include_str!(r"../../nanobasic/Examples/gosub.bas")),
     ("Goto", include_str!(r"../../nanobasic/Examples/goto.bas")),
     ("If1", include_str!(r"../../nanobasic/Examples/if1.bas")),
     ("If2", include_str!(r"../../nanobasic/Examples/if2.bas")),
-    ("Print1", include_str!(r"../../nanobasic/Examples/print1.bas")),
-    ("Print2", include_str!(r"../../nanobasic/Examples/print2.bas")),
-    ("Print3", include_str!(r"../../nanobasic/Examples/print3.bas")),
-    ("Variables", include_str!(r"../../nanobasic/Examples/variables.bas")),
+    (
+        "Print1",
+        include_str!(r"../../nanobasic/Examples/print1.bas"),
+    ),
+    (
+        "Print2",
+        include_str!(r"../../nanobasic/Examples/print2.bas"),
+    ),
+    (
+        "Print3",
+        include_str!(r"../../nanobasic/Examples/print3.bas"),
+    ),
+    (
+        "Variables",
+        include_str!(r"../../nanobasic/Examples/variables.bas"),
+    ),
 ];
 
 /// run the interpreter on a blob of source text and return the output
@@ -48,31 +66,29 @@ pub fn App() -> impl IntoView {
     // original value out of scope.  we need separate clones for each handler
     // because Rust moves captured variables into a `move` closure.
     let programs_for_change = programs.clone();
-  
+
     // index of the currently selected program
     let (selected_idx, set_selected_idx) = signal(0usize);
 
     view! {
-
         <div class="px-8 w-full h-screen flex flex-col overflow-hidden min-h-0 min-w-0">
             <header class="flex items-center justify-between px-6 py-4 mb-4 bg-blue-900 text-white shadow-md">
             <h1 class="text-xl font-bold tracking-tight">
                 "Nanobasic Playground"
             </h1>
 
-            // Rechte Seite: GitHub Link
-            <a 
-                href="https://github.com/LosCommodore/NanoBasicRust" 
-                target="_blank" 
+            <a
+                href="https://github.com/LosCommodore/NanoBasicRust"
+                target="_blank"
                 rel="noopener noreferrer"
                 class="flex items-center gap-2 hover:text-gray-400 transition-colors duration-200"
                 aria-label="GitHub Repository"
             >
                 <span class="hidden sm:inline text-sm font-medium">"Source Code"</span>
-                <svg 
-                    height="28" 
-                    width="28" 
-                    viewBox="0 0 16 16" 
+                <svg
+                    height="28"
+                    width="28"
+                    viewBox="0 0 16 16"
                     fill="currentColor"
                     aria-hidden="true"
                 >
@@ -80,7 +96,6 @@ pub fn App() -> impl IntoView {
                 </svg>
             </a>
         </header>
-        
             <div class="flex items-center space-x-4 mb-4">
                 <label for="programs">"Choose program:"</label>
                 <select
@@ -90,7 +105,6 @@ pub fn App() -> impl IntoView {
                         if let Ok(idx) = event_target_value(&ev).parse::<usize>() {
                             set_selected_idx.set(idx);
                         }
-                                // update editable text to the chosen program
                         let src = programs_for_change[selected_idx.get()].1;
                         set_active_program.set(src.to_string());
                     }
@@ -102,7 +116,6 @@ pub fn App() -> impl IntoView {
                 <button
                     class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded shadow"
                     on:click=move |_| {
-                        // run whatever is currently in the editable source box
                         let code = active_program.get();
                         match run_nano(&code) {
                             Ok(txt) => set_output.set(txt),
@@ -113,8 +126,6 @@ pub fn App() -> impl IntoView {
                     "Run interpreter"
                 </button>
             </div>
-
-        // program section with title (now editable)
         <div class="mb-4 flex-1 flex flex-col min-h-0 min-w-0">
             <h2 class="text-xl font-semibold mb-2">"Program source"</h2>
             <textarea
@@ -127,7 +138,6 @@ pub fn App() -> impl IntoView {
             />
         </div>
 
-        // output section with title
         <div class="mb-4 flex-1 flex flex-col min-h-0 min-w-0">
             <h2 class="text-xl font-semibold mb-2">"Program output"</h2>
             <pre class="nano-output w-full bg-gray-50 border border-gray-300 rounded p-4 overflow-y-auto text-sm flex-1">

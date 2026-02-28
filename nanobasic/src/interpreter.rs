@@ -9,7 +9,7 @@ use crate::parser::{
 };
 use crate::parser::{Node, parse_tokens};
 use std::collections::HashMap;
-use std::io::{Write};
+use std::io::Write;
 use std::io::{self};
 use thiserror::Error;
 
