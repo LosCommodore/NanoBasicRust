@@ -1,4 +1,4 @@
-use crate::parser::Node;
+use crate::parser::{Node, parse_tokens};
 use crate::parser::statements::if_statement::{BooleanExpression, IfStatement, RelationalOperator};
 use crate::parser::statements::print_statment::Printable;
 use crate::parser::{
@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use std::io::Write;
 use thiserror::Error;
 use std::io::{self};
+use crate::tokenizer::tokenize;
 
 #[derive(Error, Debug)]
 pub enum InterpreterError {
@@ -23,7 +24,10 @@ pub enum InterpreterError {
     ReturnWithoutGosub,
 
     #[error("Write to output failed")]
-    OutputError(#[from] io::Error)
+    OutputError(#[from] io::Error),
+
+    #[error["Error while parsing the program"]]
+    ParseErrorError(#[from] super::ParseError),
 }
 
 pub type Result<T> = std::result::Result<T, InterpreterError>;
@@ -37,8 +41,27 @@ pub struct Interpreter<'a> {
 }
 
 impl<'a>  Interpreter<'a>  {
-    pub fn new(program: Vec<Line>, output: &'a mut dyn Write) -> Self {
+    /// Create interpreter form AST = "Abstact Syntax Tree"
+    pub fn from_string(program: String, output: &'a mut dyn Write) -> Result<Self> { 
+        let lines = program
+            .lines()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>();
         
+        let tokens = tokenize(&lines)?;
+        let ast = parse_tokens(&tokens)?;
+
+        let self_ = Interpreter {
+            program: ast,
+            variables: HashMap::new(),
+            statement_index: 0,
+            subroutine_stack: Vec::new(),
+            output
+        };
+        Ok(self_)
+    }
+
+    pub fn from_ast(program: Vec<Line>, output: &'a mut dyn Write) -> Self { 
         Interpreter {
             program,
             variables: HashMap::new(),

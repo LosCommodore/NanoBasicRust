@@ -61,7 +61,7 @@ pub fn test_interpret_all_examples() {
         println!("---- Executing: {path:#?}");
         let lines = parser::parse_file(&path).unwrap();
         let mut stdout= std::io::stdout(); 
-        let mut nano_interpreter = Interpreter::new(lines, &mut stdout);
+        let mut nano_interpreter = Interpreter::from_ast(lines, &mut stdout);
         nano_interpreter.run().unwrap();
         println!("✅ -------------------------------------------------------------");
         println!("")

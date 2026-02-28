@@ -19,7 +19,7 @@ fn run_nano() -> Result<()> {
     let ast = parse_tokens(&tokens)?;
 
     let mut stream = Vec::<u8>::new();    
-    let mut nano_interpreter = Interpreter::new(ast, &mut stream);
+    let mut nano_interpreter = Interpreter::from_ast(ast, &mut stream);
     nano_interpreter.run()?;
     logging::log!("Executing Program\n hallo welt");
 
