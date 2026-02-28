@@ -32,12 +32,21 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
+
+        
       - name: Install Trunk
         run: |
-          # trunk is a cargo binary; install via cargo so we get the correct version
-          cargo install --locked trunk
+          # Prüft, ob trunk bereits im Pfad ist (vom Cache geladen)
+          if ! command -v trunk &> /dev/null; then
+            echo "Trunk nicht im Cache gefunden, installiere..."
+            cargo install --locked trunk
+          else
+            echo "Trunk wurde erfolgreich aus dem Cache geladen."
+          fi
 
       - name: Build with Trunk
+        working-directory: ./web 
+
         # use the repository name for the public url so pages are served from
         # https://<user>.github.io/<repo>/
         run: |
