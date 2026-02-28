@@ -93,13 +93,12 @@ pub fn App() -> impl IntoView {
             <h2 class="text-xl font-semibold mb-2">"Program source"</h2>
             <textarea
                 class="w-full bg-blue-50 border border-blue-300 rounded p-4 text-sm flex-1 resize-none focus:outline-none"
+                prop:value=active_program
                 on:input=move |ev| {
                     let val = event_target_value(&ev);
                     set_active_program.set(val);
                 }
-            >
-                {active_program}
-            </textarea>
+            />
         </div>
 
         // output section with title
