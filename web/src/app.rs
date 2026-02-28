@@ -34,55 +34,65 @@ pub fn App() -> impl IntoView {
     }
 
     // prepare clones for the closures; Rc::clone is cheap and prevents moving the
-    // original value out of scope.
+    // original value out of scope.  we need separate clones for each handler
+    // because Rust moves captured variables into a `move` closure.
     let programs_for_change = programs.clone();
+    let programs_for_click = programs.clone();
   
     // index of the currently selected program
     let (selected_idx, set_selected_idx) = signal(0usize);
 
     view! {
-        <div class="ml-8 mt-8 max-w-xl">
+        <div class="ml-8 mt-8 max-w-4xl h-screen flex flex-col">
             <h1 class="text-2xl font-bold mb-4">"Nanobasic Playground"</h1>
-            <label for="programs">"Choose program:"</label>
-            <select
-                id="programs"
-                class="w-64 border border-gray-300 rounded px-2 py-1 mt-2 mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-                on:change=move |ev| {
-                    if let Ok(idx) = event_target_value(&ev).parse::<usize>() {
-                        set_selected_idx.set(idx);
+            <div class="flex items-center space-x-4 mb-4">
+                <label for="programs">"Choose program:"</label>
+                <select
+                    id="programs"
+                    class="w-64 border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    on:change=move |ev| {
+                        if let Ok(idx) = event_target_value(&ev).parse::<usize>() {
+                            set_selected_idx.set(idx);
+                        }
+                        // update preview text (I assume you want the source, not name)
+                        let src = programs_for_change[selected_idx.get()].1;
+                        set_active_program.set(src.to_string());
                     }
-                    // update preview text (I assume you want the source, not name)
-                    let src = programs_for_change[selected_idx.get()].1;
-                    set_active_program.set(src.to_string());
-                }
-            >
-            {programs_for_change.iter().enumerate().map(|(i,(name,_))|{
-                    view! { <option value={i.to_string()} selected={i==selected_idx.get()}>{*name}</option> }
-                }).collect_view()}
-            </select>
+                >
+                {programs_for_change.iter().enumerate().map(|(i,(name,_))|{
+                        view! { <option value={i.to_string()} selected={i==selected_idx.get()}>{*name}</option> }
+                    }).collect_view()}
+                </select>
+                <button
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded shadow"
+                    on:click=move |_| {
+                        // use pre-cloned Rc
+                        let code = programs_for_click[selected_idx.get()].1;
+                        match run_nano(code) {
+                            Ok(txt) => set_output.set(txt),
+                            Err(e)  => set_output.set(format!("error: {e:?}")),
+                        }
+                    }
+                >
+                    "Run interpreter"
+                </button>
+            </div>
 
+        // program section with title
+        <div class="mb-4 flex-1 flex flex-col">
+            <h2 class="text-xl font-semibold mb-2">"Program source"</h2>
+            <pre class="program-source bg-blue-50 border border-blue-300 rounded p-4 text-sm overflow-auto flex-1">
+                { active_program }
+            </pre>
+        </div>
 
-        // show the raw program text for the selected item
-        <pre class="program-source bg-blue-50 border border-blue-300 rounded p-4 mb-4 text-sm overflow-auto">
-            { active_program }
-        </pre>
-
-        <button
-            class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded shadow"
-            on:click=move |_| {
-                let p = programs.clone();
-                let code = p[selected_idx.get()].1;
-                match run_nano(code) {
-                    Ok(txt) => set_output.set(txt),
-                    Err(e)  => set_output.set(format!("error: {e:?}")),
-                }
-            }
-        >
-            "Run interpreter"
-        </button>
-
-        // render the stored text, <pre> keeps the line breaks
-        <pre class="nano-output mt-4">{output}</pre>
+        // output section with title
+        <div class="mb-4 flex-1 flex flex-col">
+            <h2 class="text-xl font-semibold mb-2">"Program output"</h2>
+            <pre class="nano-output bg-gray-50 border border-gray-300 rounded p-4 overflow-auto text-sm flex-1">
+                {output}
+            </pre>
+        </div>
         </div>
     }
 }
