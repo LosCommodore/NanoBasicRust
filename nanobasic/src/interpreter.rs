@@ -9,7 +9,7 @@ use crate::parser::{
 };
 use crate::parser::{Node, parse_tokens};
 use std::collections::HashMap;
-use std::io::Write;
+use std::io::{Write};
 use std::io::{self};
 use thiserror::Error;
 
@@ -43,8 +43,9 @@ pub struct Interpreter<'a> {
 
 impl<'a> Interpreter<'a> {
     /// Create interpreter form AST = "Abstact Syntax Tree"
-    pub fn from_string(program: String, output: &'a mut dyn Write) -> Result<Self> {
+    pub fn from_str(program: impl AsRef<str>, output: &'a mut dyn Write) -> Result<Self> {
         let lines = program
+            .as_ref()
             .lines()
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
