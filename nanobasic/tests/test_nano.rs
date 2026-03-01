@@ -70,7 +70,6 @@ pub fn test_interpret_all_examples() {
     }
 }
 
-
 #[test]
 pub fn test_error_on_finished() -> Result<()> {
     let program = r#"
@@ -92,7 +91,6 @@ pub fn test_error_on_finished() -> Result<()> {
     Ok(())
 }
 
-
 #[test]
 pub fn test_step_line() -> Result<()> {
     let program = r#"
@@ -106,8 +104,9 @@ pub fn test_step_line() -> Result<()> {
 
     while !interpreter.finished() {
         interpreter.step_line()?
-        
     }
-    if interpreter.current_line() != 30 {bail!("wrong line number"); }
+    if interpreter.current_line() != 30 {
+        bail!("wrong line number");
+    }
     Ok(())
 }

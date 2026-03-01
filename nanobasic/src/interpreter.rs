@@ -192,8 +192,8 @@ impl<'a> Interpreter<'a> {
     }
 
     pub fn finished(&self) -> bool {
-        return self.statement_index >= self.program.len()        
-    }                                                    
+        return self.statement_index >= self.program.len();
+    }
 
     pub fn current_line(&self) -> usize {
         return self.current_line;
@@ -201,7 +201,9 @@ impl<'a> Interpreter<'a> {
 
     // Executes a signle line of the program
     pub fn step_line(&mut self) -> Result<()> {
-        if self.finished() { return Err(InterpreterError::Finished) };
+        if self.finished() {
+            return Err(InterpreterError::Finished);
+        };
 
         let Line { statement, line_id } = &self.program[self.statement_index];
         log::debug!("Intrpreting line: {line_id}");
