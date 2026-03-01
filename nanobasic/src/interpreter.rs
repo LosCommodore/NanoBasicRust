@@ -29,6 +29,9 @@ pub enum InterpreterError {
 
     #[error["Error while parsing the program"]]
     ParseErrorError(#[from] ParseError),
+
+    #[error["Program is already finished"]]
+    Finished,
 }
 
 pub type Result<T> = std::result::Result<T, InterpreterError>;
@@ -39,6 +42,7 @@ pub struct Interpreter<'a> {
     statement_index: usize,
     subroutine_stack: Vec<usize>,
     output: &'a mut dyn Write,
+    current_line: usize,
 }
 
 impl<'a> Interpreter<'a> {
@@ -59,6 +63,7 @@ impl<'a> Interpreter<'a> {
             statement_index: 0,
             subroutine_stack: Vec::new(),
             output,
+            current_line: 0,
         };
         Ok(self_)
     }
@@ -70,6 +75,7 @@ impl<'a> Interpreter<'a> {
             statement_index: 0,
             subroutine_stack: Vec::new(),
             output,
+            current_line: 0,
         }
     }
 
@@ -185,17 +191,29 @@ impl<'a> Interpreter<'a> {
         Ok(())
     }
 
-    fn interpret(&mut self) -> Result<()> {
+    pub fn finished(&self) -> bool {
+        return self.statement_index >= self.program.len()        
+    }                                                    
+
+    pub fn current_line(&self) -> usize {
+        return self.current_line;
+    }
+
+    // Executes a signle line of the program
+    pub fn step_line(&mut self) -> Result<()> {
+        if self.finished() { return Err(InterpreterError::Finished) };
+
         let Line { statement, line_id } = &self.program[self.statement_index];
         log::debug!("Intrpreting line: {line_id}");
+        self.current_line = *line_id;
 
         let content = &statement.clone().content;
         self.interpret_statement(content)
     }
 
     pub fn run(&mut self) -> Result<()> {
-        while self.statement_index < self.program.len() {
-            self.interpret()?
+        while !self.finished() {
+            self.step_line()?
         }
         Ok(())
     }

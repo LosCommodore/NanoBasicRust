@@ -42,8 +42,15 @@ const PROGRAMS: &[(&str, &str)] = &[
 /// run the interpreter on a blob of source text and return the output
 fn run_nano(source: &str) -> Result<String> {
     let mut stream = Vec::<u8>::new();
-    let mut nano_interpreter = Interpreter::from_str(source, &mut stream)?;
-    nano_interpreter.run()?;
+    let mut interpreter = Interpreter::from_str(source, &mut stream)?;
+
+    let mut count_lines = 0usize;
+    let maximum_lines = 10000usize;
+    while !interpreter.finished() & (count_lines<maximum_lines) {
+        interpreter.step_line()?;  
+        count_lines+=1;
+    }
+
     let result = String::from_utf8(stream)?;
     Ok(result)
 }

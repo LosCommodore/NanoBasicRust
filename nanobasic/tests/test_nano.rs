@@ -1,7 +1,9 @@
 use anyhow::Context;
 use anyhow::Result;
+use anyhow::bail;
 use glob::glob;
 use nanobasic::interpreter::Interpreter;
+use nanobasic::interpreter::InterpreterError;
 use nanobasic::parser;
 use nanobasic::parser::tokenizer::{Token, tokenize};
 use std::fs::File;
@@ -66,4 +68,46 @@ pub fn test_interpret_all_examples() {
         println!("✅ -------------------------------------------------------------");
         println!("")
     }
+}
+
+
+#[test]
+pub fn test_error_on_finished() -> Result<()> {
+    let program = r#"
+        10 PRINT "HALLO"
+        20 PRINT "WELT"
+        30 PRINT "BLUB"
+    "#;
+
+    let mut stdout = std::io::stdout();
+    let mut interpreter = Interpreter::from_str(program, &mut stdout)?;
+
+    for _ in 1..10 {
+        if let Err(InterpreterError::Finished) = interpreter.step_line() {
+            if interpreter.current_line() != 30 {
+                bail!("Wrong line number!")
+            }
+        }
+    }
+    Ok(())
+}
+
+
+#[test]
+pub fn test_step_line() -> Result<()> {
+    let program = r#"
+        10 PRINT "HALLO"
+        20 PRINT "WELT"
+        30 PRINT "BLUB"
+    "#;
+
+    let mut stdout = std::io::stdout();
+    let mut interpreter = Interpreter::from_str(program, &mut stdout)?;
+
+    while !interpreter.finished() {
+        interpreter.step_line()?
+        
+    }
+    if interpreter.current_line() != 30 {bail!("wrong line number"); }
+    Ok(())
 }
