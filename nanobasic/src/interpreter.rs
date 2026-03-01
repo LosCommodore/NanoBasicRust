@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::io::{self};
 use thiserror::Error;
+use serde_json;
 
 #[derive(Error, Debug)]
 pub enum InterpreterError {
@@ -32,6 +33,9 @@ pub enum InterpreterError {
 
     #[error["Program is already finished"]]
     Finished,
+
+    #[error["Failed to export Abstact Syntax Tree"]]
+    ExportError(#[from] serde_json::Error),
 }
 
 pub type Result<T> = std::result::Result<T, InterpreterError>;
@@ -95,6 +99,7 @@ impl<'a> Interpreter<'a> {
         };
         Ok(result)
     }
+
 
     fn calculate_expression(&self, expression: &Expression) -> Result<isize> {
         use Expression::*;
@@ -197,6 +202,11 @@ impl<'a> Interpreter<'a> {
 
     pub fn current_line(&self) -> usize {
         return self.current_line;
+    }
+
+
+    pub fn ast_json_pretty(self) -> Result<String>{
+        serde_json::to_string_pretty(&self.program).map_err(InterpreterError::ExportError)
     }
 
     // Executes a signle line of the program

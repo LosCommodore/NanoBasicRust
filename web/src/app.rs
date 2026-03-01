@@ -42,7 +42,7 @@ const PROGRAMS: &[(&str, &str)] = &[
 const MAX_EXE_LINES: usize = 10000;
 
 /// run the interpreter on a blob of source text and return the output
-fn run_nano(source: &str) -> Result<String> {
+fn run_nano(source: &str) -> Result<(String, String)> {
     let mut stream = Vec::<u8>::new();
     let mut interpreter = Interpreter::from_str(source, &mut stream)?;
     let mut count_lines = 0usize;
@@ -51,9 +51,9 @@ fn run_nano(source: &str) -> Result<String> {
         interpreter.step_line()?;
         count_lines += 1;
     }
-
+    let ast = interpreter.ast_json_pretty()?;
     let result = String::from_utf8(stream)?;
-    Ok(result)
+    Ok((result, ast))
 }
 
 #[component]
@@ -121,7 +121,11 @@ fn SelectProgram(set_active_program: WriteSignal<String>) -> impl IntoView {
 }
 
 #[component]
-fn ButtonRun(active_program: ReadSignal<String>, set_output: WriteSignal<String>) -> impl IntoView {
+fn ButtonRun(
+    active_program: ReadSignal<String>,
+    set_output: WriteSignal<String>,
+    set_ast: WriteSignal<String>,
+) -> impl IntoView {
     view! {
         <div>
             <button
@@ -129,7 +133,10 @@ fn ButtonRun(active_program: ReadSignal<String>, set_output: WriteSignal<String>
                 on:click=move |_| {
                     let code = active_program.get();
                     match run_nano(&code) {
-                        Ok(txt) => set_output.set(txt),
+                        Ok((output, ast)) => {
+                            set_output.set(output);
+                            set_ast.set(ast);
+                        }
                         Err(e) => set_output.set(format!("error: {e:?}")),
                     }
                 }
@@ -146,12 +153,16 @@ pub fn ProgramSource(
     set_active_program: WriteSignal<String>,
 ) -> impl IntoView {
     view! {
-        <div class="mb-4 flex-1 flex flex-col min-h-0 min-w-0">
-            <h2 class="text-xl font-semibold mb-2">"Program source"</h2>
+        // min-h-[200px] garantiert die Mindesthöhe
+        // max-h-[40%] verhindert, dass sie den AST/Output komplett verdrängt
+        <div class="flex flex-col min-h-[400px] max-h-[40%] w-full">
+            <h2 class="text-xl font-semibold mb-2 shrink-0">"Program source"</h2>
             <textarea
                 spellcheck="false"
                 autocapitalize="off"
-                class="w-full border border-blue-300 rounded p-4 flex-1 resize-none focus:outline-none"
+                // flex-1 und min-h-0 sind hier ESSENZIELL, damit die Textarea 
+                // innerhalb der 200px scrollt, statt das Div zu dehnen
+                class="w-full flex-1 min-h-0 resize-none border border-blue-300 rounded p-4 overflow-auto focus:outline-none"
                 prop:value=active_program
                 on:input=move |ev| {
                     let val = event_target_value(&ev);
@@ -163,9 +174,32 @@ pub fn ProgramSource(
 }
 
 #[component]
+pub fn DisplayAST(
+    ast: ReadSignal<String>,
+) -> impl IntoView {
+    view! {
+        // h-full sorgt dafür, dass die Spalte die Höhe des flex-row Containers nutzt
+        <div class="flex flex-1 flex-col h-full min-h-0 min-w-0">
+            // shrink-0 verhindert, dass der Titel bei Platzmangel verschwindet
+            <h2 class="text-xl font-semibold mb-2 shrink-0">"Abstract Syntax Tree"</h2>
+            
+            <pre
+                spellcheck="false"
+                autocapitalize="off"
+                // WICHTIG: min-h-0 erlaubt dem pre-Tag zu schrumpfen und zu scrollen
+                // whitespace-pre-wrap hilft, wenn Zeilen zu lang für die Breite sind
+                class="bg-white w-full border border-blue-300 rounded p-4 overflow-auto flex-1 min-h-0 whitespace-pre-wrap break-all"
+            >
+                {ast}
+            </pre>
+         </div>
+    }
+}
+
+#[component]
 pub fn ProgramOutput(output: ReadSignal<String>) -> impl IntoView {
     view! {
-        <div class="flex-1 flex flex-col min-h-0 min-w-0">
+        <div class="flex flex-1 flex-col min-h-h-800 min-w-0 ">
             <h2 class="text-xl font-semibold mb-2">"Program output"</h2>
             <pre
                 spellcheck="false"
@@ -182,7 +216,7 @@ pub fn ProgramOutput(output: ReadSignal<String>) -> impl IntoView {
 pub fn Hint(hint: String) -> impl IntoView {
     view! {
         <div
-            class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 flex items-center shadow-sm"
+            class="w-full bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 flex items-center shadow-sm"
             role="alert"
         >
             <div class="flex-shrink-0">
@@ -208,6 +242,7 @@ pub fn Hint(hint: String) -> impl IntoView {
 pub fn App() -> impl IntoView {
     // state: output of program
     let (output, set_output) = signal(String::new());
+    let (ast, set_ast) = signal(String::new());
 
     // list of demo programs
     let programs: Rc<Vec<(&str, &str)>> = Rc::new(PROGRAMS.iter().copied().collect());
@@ -219,15 +254,20 @@ pub fn App() -> impl IntoView {
     }
 
     view! {
-        <div class="px-8 pb-4 w-full h-screen flex flex-col overflow-hidden min-h-0 min-w-0 gap-4">
+       <div class="px-8 pb-4 w-full h-screen flex flex-col overflow-hidden gap-4">
             <Header />
             <SelectProgram set_active_program />
             <ProgramSource active_program set_active_program />
-            <ButtonRun active_program set_output />
-            <ProgramOutput output />
-            <Hint hint=format!(
-                "Currently a maximum of {MAX_EXE_LINES} are executed to prevent freezing the browser in these cases.",
+            <ButtonRun active_program set_output set_ast />
+            <div class="flex flex-[2] flex-row w-full gap-4 min-h-0">
+                <ProgramOutput output />
+                <DisplayAST ast/>
+            </div>
+            <div class="flex flex-row">
+                <Hint hint=format!(
+                "Cu rrently a maximum of {MAX_EXE_LINES} are executed to prevent freezing the browser in these cases.",
             ) />
+            </div>
         </div>
     }
 }
