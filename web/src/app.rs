@@ -1,7 +1,7 @@
 use anyhow::Result;
 use leptos::prelude::*;
 use nanobasic::interpreter::Interpreter;
-use std::{rc::Rc};
+use std::rc::Rc;
 
 // include every BASIC file in the top‑level Examples directory; the
 // tuple elements are (display name, source code).  When you add/remove files
@@ -39,7 +39,7 @@ const PROGRAMS: &[(&str, &str)] = &[
     ),
 ];
 
-const MAX_EXE_LINES: usize  =  10000;
+const MAX_EXE_LINES: usize = 10000;
 
 /// run the interpreter on a blob of source text and return the output
 fn run_nano(source: &str) -> Result<String> {
@@ -121,8 +121,7 @@ fn SelectProgram(set_active_program: WriteSignal<String>) -> impl IntoView {
 }
 
 #[component]
-fn ButtonRun(active_program: ReadSignal<String>, 
-            set_output: WriteSignal<String>) -> impl IntoView {
+fn ButtonRun(active_program: ReadSignal<String>, set_output: WriteSignal<String>) -> impl IntoView {
     view! {
         <div>
             <button
@@ -141,9 +140,11 @@ fn ButtonRun(active_program: ReadSignal<String>,
     }
 }
 
-
 #[component]
-pub fn ProgramSource(active_program:  ReadSignal<String>, set_active_program: WriteSignal<String>) -> impl IntoView {
+pub fn ProgramSource(
+    active_program: ReadSignal<String>,
+    set_active_program: WriteSignal<String>,
+) -> impl IntoView {
     view! {
         <div class="mb-4 flex-1 flex flex-col min-h-0 min-w-0">
             <h2 class="text-xl font-semibold mb-2">"Program source"</h2>
@@ -203,7 +204,6 @@ pub fn Hint(hint: String) -> impl IntoView {
     }
 }
 
-
 #[component]
 pub fn App() -> impl IntoView {
     // state: output of program
@@ -212,12 +212,12 @@ pub fn App() -> impl IntoView {
     // list of demo programs
     let programs: Rc<Vec<(&str, &str)>> = Rc::new(PROGRAMS.iter().copied().collect());
     let (active_program, set_active_program) = signal(String::new());
-    
+
     // pre-populate the active_program with the first entry
     if let Some((_, src)) = programs.get(0) {
         set_active_program.set(src.to_string());
     }
-    
+
     view! {
         <div class="px-8 pb-4 w-full h-screen flex flex-col overflow-hidden min-h-0 min-w-0 gap-4">
             <Header />
@@ -225,7 +225,9 @@ pub fn App() -> impl IntoView {
             <ProgramSource active_program set_active_program />
             <ButtonRun active_program set_output />
             <ProgramOutput output />
-            <Hint hint=format!("Currently a maximum of {MAX_EXE_LINES} are executed to prevent freezing the browser in these cases.") />
+            <Hint hint=format!(
+                "Currently a maximum of {MAX_EXE_LINES} are executed to prevent freezing the browser in these cases.",
+            ) />
         </div>
     }
 }
