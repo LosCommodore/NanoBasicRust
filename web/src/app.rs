@@ -1,7 +1,7 @@
 use anyhow::Result;
 use leptos::prelude::*;
 use nanobasic::interpreter::Interpreter;
-use std::rc::Rc;
+use std::{rc::Rc};
 
 // include every BASIC file in the top‑level Examples directory; the
 // tuple elements are (display name, source code).  When you add/remove files
@@ -39,14 +39,15 @@ const PROGRAMS: &[(&str, &str)] = &[
     ),
 ];
 
+const MAX_EXE_LINES: usize  =  10000;
+
 /// run the interpreter on a blob of source text and return the output
 fn run_nano(source: &str) -> Result<String> {
     let mut stream = Vec::<u8>::new();
     let mut interpreter = Interpreter::from_str(source, &mut stream)?;
-
     let mut count_lines = 0usize;
-    let maximum_lines = 10000usize;
-    while !interpreter.finished() & (count_lines < maximum_lines) {
+
+    while !interpreter.finished() & (count_lines < MAX_EXE_LINES) {
         interpreter.step_line()?;
         count_lines += 1;
     }
@@ -84,86 +85,150 @@ fn Header() -> impl IntoView {
 }
 
 #[component]
-pub fn App() -> impl IntoView {
-    // state that holds the latest output
-    let (output, set_output) = signal(String::new());
-    let (active_program, set_active_program) = signal(String::new());
-
-    // list of programs we can execute (name, source text)
+fn SelectProgram(set_active_program: WriteSignal<String>) -> impl IntoView {
     let programs: Rc<Vec<(&str, &str)>> = Rc::new(PROGRAMS.iter().copied().collect());
 
+    let (selected_idx, set_selected_idx) = signal(0usize);
+
+    view! {
+        <div class="flex items-center space-x-4">
+            <label for="programs">"LOAD program:"</label>
+            <select
+                id="programs"
+                class="w-64 border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                on:change=move |ev| {
+                    if let Ok(idx) = event_target_value(&ev).parse::<usize>() {
+                        set_selected_idx.set(idx);
+                    }
+                    let src = programs[selected_idx.get()].1;
+                    set_active_program.set(src.to_string());
+                }
+            >
+                {programs
+                    .iter()
+                    .enumerate()
+                    .map(|(i, (name, _))| {
+                        view! {
+                            <option value=i.to_string() selected=i == selected_idx.get()>
+                                {*name}
+                            </option>
+                        }
+                    })
+                    .collect_view()}
+            </select>
+        </div>
+    }
+}
+
+#[component]
+fn ButtonRun(active_program: ReadSignal<String>, 
+            set_output: WriteSignal<String>) -> impl IntoView {
+    view! {
+        <div>
+            <button
+                class="bg-blue-500 hover:bg-blue-600 text-white font-semibold p-2 rounded shadow w-full"
+                on:click=move |_| {
+                    let code = active_program.get();
+                    match run_nano(&code) {
+                        Ok(txt) => set_output.set(txt),
+                        Err(e) => set_output.set(format!("error: {e:?}")),
+                    }
+                }
+            >
+                "Run interpreter"
+            </button>
+        </div>
+    }
+}
+
+
+#[component]
+pub fn ProgramSource(active_program:  ReadSignal<String>, set_active_program: WriteSignal<String>) -> impl IntoView {
+    view! {
+        <div class="mb-4 flex-1 flex flex-col min-h-0 min-w-0">
+            <h2 class="text-xl font-semibold mb-2">"Program source"</h2>
+            <textarea
+                spellcheck="false"
+                autocapitalize="off"
+                class="w-full border border-blue-300 rounded p-4 flex-1 resize-none focus:outline-none"
+                prop:value=active_program
+                on:input=move |ev| {
+                    let val = event_target_value(&ev);
+                    set_active_program.set(val);
+                }
+            />
+        </div>
+    }
+}
+
+#[component]
+pub fn ProgramOutput(output: ReadSignal<String>) -> impl IntoView {
+    view! {
+        <div class="flex-1 flex flex-col min-h-0 min-w-0">
+            <h2 class="text-xl font-semibold mb-2">"Program output"</h2>
+            <pre
+                spellcheck="false"
+                autocapitalize="off"
+                class="bg-white w-full border border-blue-300 rounded p-4 overflow-y-auto flex-1"
+            >
+                {output}
+            </pre>
+        </div>
+    }
+}
+
+#[component]
+pub fn Hint(hint: String) -> impl IntoView {
+    view! {
+        <div class="bg-yellow">
+            "In the current version the program will stop after executing a maximum 10000 lines."
+        </div>
+        <div
+            class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 flex items-center shadow-sm"
+            role="alert"
+        >
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        fill-rule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clip-rule="evenodd"
+                    />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    <span class="font-bold">"Hint "</span>
+                    {hint}
+                </p>
+            </div>
+        </div>
+    }
+}
+
+
+#[component]
+pub fn App() -> impl IntoView {
+    // state: output of program
+    let (output, set_output) = signal(String::new());
+
+    // list of demo programs
+    let programs: Rc<Vec<(&str, &str)>> = Rc::new(PROGRAMS.iter().copied().collect());
+    let (active_program, set_active_program) = signal(String::new());
+    
     // pre-populate the active_program with the first entry
     if let Some((_, src)) = programs.get(0) {
         set_active_program.set(src.to_string());
     }
-
-    // prepare clones for the closures; Rc::clone is cheap and prevents moving the
-    // original value out of scope.  we need separate clones for each handler
-    // because Rust moves captured variables into a `move` closure.
-    let programs_for_change = programs.clone();
-
-    // index of the currently selected program
-    let (selected_idx, set_selected_idx) = signal(0usize);
-
+    
     view! {
-        <div class="px-8 w-full h-screen flex flex-col overflow-hidden min-h-0 min-w-0">
+        <div class="px-8 pb-4 w-full h-screen flex flex-col overflow-hidden min-h-0 min-w-0 gap-4">
             <Header />
-            <div class="flex items-center space-x-4 mb-4">
-                <label for="programs">"Choose program:"</label>
-                <select
-                    id="programs"
-                    class="w-64 border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    on:change=move |ev| {
-                        if let Ok(idx) = event_target_value(&ev).parse::<usize>() {
-                            set_selected_idx.set(idx);
-                        }
-                        let src = programs_for_change[selected_idx.get()].1;
-                        set_active_program.set(src.to_string());
-                    }
-                >
-                    {programs_for_change
-                        .iter()
-                        .enumerate()
-                        .map(|(i, (name, _))| {
-                            view! {
-                                <option value=i.to_string() selected=i == selected_idx.get()>
-                                    {*name}
-                                </option>
-                            }
-                        })
-                        .collect_view()}
-                </select>
-                <button
-                    class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded shadow"
-                    on:click=move |_| {
-                        let code = active_program.get();
-                        match run_nano(&code) {
-                            Ok(txt) => set_output.set(txt),
-                            Err(e) => set_output.set(format!("error: {e:?}")),
-                        }
-                    }
-                >
-                    "Run interpreter"
-                </button>
-            </div>
-            <div class="mb-4 flex-1 flex flex-col min-h-0 min-w-0">
-                <h2 class="text-xl font-semibold mb-2">"Program source"</h2>
-                <textarea
-                    class="w-full bg-blue-50 border border-blue-300 rounded p-4 text-sm flex-1 resize-none focus:outline-none"
-                    prop:value=active_program
-                    on:input=move |ev| {
-                        let val = event_target_value(&ev);
-                        set_active_program.set(val);
-                    }
-                />
-            </div>
-
-            <div class="mb-4 flex-1 flex flex-col min-h-0 min-w-0">
-                <h2 class="text-xl font-semibold mb-2">"Program output"</h2>
-                <pre class="nano-output w-full bg-gray-50 border border-gray-300 rounded p-4 overflow-y-auto text-sm flex-1">
-                    {output}
-                </pre>
-            </div>
+            <Hint hint=format!("Currently a maximum of {MAX_EXE_LINES} are executed to prevent freezing the browser in these cases.") />
+            <SelectProgram set_active_program />
+            <ProgramSource active_program set_active_program />
+            <ButtonRun active_program set_output />
+            <ProgramOutput output />
         </div>
     }
 }
