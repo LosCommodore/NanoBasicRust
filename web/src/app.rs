@@ -180,9 +180,6 @@ pub fn ProgramOutput(output: ReadSignal<String>) -> impl IntoView {
 #[component]
 pub fn Hint(hint: String) -> impl IntoView {
     view! {
-        <div class="bg-yellow">
-            "In the current version the program will stop after executing a maximum 10000 lines."
-        </div>
         <div
             class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 flex items-center shadow-sm"
             role="alert"
@@ -224,11 +221,11 @@ pub fn App() -> impl IntoView {
     view! {
         <div class="px-8 pb-4 w-full h-screen flex flex-col overflow-hidden min-h-0 min-w-0 gap-4">
             <Header />
-            <Hint hint=format!("Currently a maximum of {MAX_EXE_LINES} are executed to prevent freezing the browser in these cases.") />
             <SelectProgram set_active_program />
             <ProgramSource active_program set_active_program />
             <ButtonRun active_program set_output />
             <ProgramOutput output />
+            <Hint hint=format!("Currently a maximum of {MAX_EXE_LINES} are executed to prevent freezing the browser in these cases.") />
         </div>
     }
 }
