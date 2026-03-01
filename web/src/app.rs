@@ -59,9 +59,9 @@ fn run_nano(source: &str) -> Result<(String, String)> {
 #[component]
 fn Header() -> impl IntoView {
     view! {
-        <header class="flex items-center justify-between px-6 py-4 mb-4 bg-blue-900 text-white shadow-md">
-            <h1 class="text-xl font-bold tracking-tight">"Nanobasic Playground"</h1>
-
+       <header class="flex items-center justify-between px-4 py-3 mb-2 bg-blue-900 text-white shadow-md">
+            <h1 class="text-lg sm:text-xl font-bold tracking-tight">"Nanobasic"</h1>
+  
             <a
                 href="https://github.com/LosCommodore/NanoBasicRust"
                 target="_blank"
@@ -95,8 +95,8 @@ fn SelectProgram(set_active_program: WriteSignal<String>) -> impl IntoView {
             <label for="programs">"LOAD program:"</label>
             <select
                 id="programs"
-                class="w-64 border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-                on:change=move |ev| {
+                    class="w-full sm:w-64 border border-gray-300 rounded px-2 py-2 bg-white focus:ring-2 focus:ring-blue-400"
+                    on:change=move |ev| {
                     if let Ok(idx) = event_target_value(&ev).parse::<usize>() {
                         set_selected_idx.set(idx);
                     }
@@ -153,16 +153,13 @@ pub fn ProgramSource(
     set_active_program: WriteSignal<String>,
 ) -> impl IntoView {
     view! {
-        // min-h-[200px] garantiert die Mindesthöhe
-        // max-h-[40%] verhindert, dass sie den AST/Output komplett verdrängt
-        <div class="flex flex-col min-h-[400px] max-h-[40%] w-full">
-            <h2 class="text-xl font-semibold mb-2 shrink-0">"Program source"</h2>
-            <textarea
-                spellcheck="false"
+      <div class="flex flex-col min-h-[250px] sm:min-h-[400px] w-full">
+    <h2 class="text-lg font-semibold mb-1">"Program source"</h2>
+    <textarea
+        class="w-full flex-1 min-h-0 resize-none border border-blue-300 rounded p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-400 outline-none"
                 autocapitalize="off"
-                // flex-1 und min-h-0 sind hier ESSENZIELL, damit die Textarea 
+                // flex-1 und min-h-0 sind hier ESSENZIELL, damit die Textarea
                 // innerhalb der 200px scrollt, statt das Div zu dehnen
-                class="w-full flex-1 min-h-0 resize-none border border-blue-300 rounded p-4 overflow-auto focus:outline-none"
                 prop:value=active_program
                 on:input=move |ev| {
                     let val = event_target_value(&ev);
@@ -174,25 +171,19 @@ pub fn ProgramSource(
 }
 
 #[component]
-pub fn DisplayAST(
-    ast: ReadSignal<String>,
-) -> impl IntoView {
+pub fn DisplayAST(ast: ReadSignal<String>) -> impl IntoView {
     view! {
-        // h-full sorgt dafür, dass die Spalte die Höhe des flex-row Containers nutzt
-        <div class="flex flex-1 flex-col h-full min-h-0 min-w-0">
-            // shrink-0 verhindert, dass der Titel bei Platzmangel verschwindet
-            <h2 class="text-xl font-semibold mb-2 shrink-0">"Abstract Syntax Tree"</h2>
-            
-            <pre
-                spellcheck="false"
-                autocapitalize="off"
-                // WICHTIG: min-h-0 erlaubt dem pre-Tag zu schrumpfen und zu scrollen
-                // whitespace-pre-wrap hilft, wenn Zeilen zu lang für die Breite sind
-                class="bg-white w-full border border-blue-300 rounded p-4 overflow-auto flex-1 min-h-0 whitespace-pre-wrap break-all"
-            >
-                {ast}
-            </pre>
-         </div>
+        <div class="w-full px-1">
+            <details class="group border border-blue-200 rounded-lg bg-white overflow-hidden shadow-sm" open=false>
+                <summary class="flex justify-between items-center p-3 cursor-pointer bg-blue-50 list-none font-bold text-sm text-blue-900 uppercase">
+                    "Abstract Syntax Tree (AST)"
+                    <span class="transition-transform group-open:rotate-180">"▼"</span>
+                </summary>
+                <pre class="p-4 font-mono overflow-auto max-h-[900px] bg-white border-t border-blue-100 whitespace-pre-wrap break-all">
+                    {ast}
+                </pre>
+            </details>
+        </div>
     }
 }
 
@@ -216,7 +207,7 @@ pub fn ProgramOutput(output: ReadSignal<String>) -> impl IntoView {
 pub fn Hint(hint: String) -> impl IntoView {
     view! {
         <div
-            class="w-full bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 flex items-center shadow-sm"
+            class="w-full bg-yellow-50 border-yellow-400 p-2 mb-1 flex items-center shadow-sm"
             role="alert"
         >
             <div class="flex-shrink-0">
@@ -254,20 +245,20 @@ pub fn App() -> impl IntoView {
     }
 
     view! {
-       <div class="px-8 pb-4 w-full h-screen flex flex-col overflow-hidden gap-4">
+        <div class="px-4 pb-4 w-full min-h-screen flex flex-col gap-4 overflow-x-hidden">
             <Header />
             <SelectProgram set_active_program />
             <ProgramSource active_program set_active_program />
             <ButtonRun active_program set_output set_ast />
-            <div class="flex flex-[2] flex-row w-full gap-4 min-h-0">
+
                 <ProgramOutput output />
-                <DisplayAST ast/>
-            </div>
-            <div class="flex flex-row">
+                <DisplayAST ast />
+         <div class="flex flex-row">
                 <Hint hint=format!(
                 "Cu rrently a maximum of {MAX_EXE_LINES} are executed to prevent freezing the browser in these cases.",
             ) />
             </div>
+        
         </div>
     }
 }
