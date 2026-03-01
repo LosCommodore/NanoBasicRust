@@ -59,9 +59,9 @@ fn run_nano(source: &str) -> Result<(String, String)> {
 #[component]
 fn Header() -> impl IntoView {
     view! {
-       <header class="flex items-center justify-between px-4 py-3 mb-2 bg-blue-900 text-white shadow-md">
+        <header class="flex items-center justify-between px-4 py-3 mb-2 bg-blue-900 text-white shadow-md">
             <h1 class="text-lg sm:text-xl font-bold tracking-tight">"Nanobasic"</h1>
-  
+
             <a
                 href="https://github.com/LosCommodore/NanoBasicRust"
                 target="_blank"
@@ -95,8 +95,8 @@ fn SelectProgram(set_active_program: WriteSignal<String>) -> impl IntoView {
             <label for="programs">"LOAD program:"</label>
             <select
                 id="programs"
-                    class="w-full sm:w-64 border border-gray-300 rounded px-2 py-2 bg-white focus:ring-2 focus:ring-blue-400"
-                    on:change=move |ev| {
+                class="w-full sm:w-64 border border-gray-300 rounded px-2 py-2 bg-white focus:ring-2 focus:ring-blue-400"
+                on:change=move |ev| {
                     if let Ok(idx) = event_target_value(&ev).parse::<usize>() {
                         set_selected_idx.set(idx);
                     }
@@ -153,10 +153,10 @@ pub fn ProgramSource(
     set_active_program: WriteSignal<String>,
 ) -> impl IntoView {
     view! {
-      <div class="flex flex-col min-h-[250px] sm:min-h-[400px] w-full">
-    <h2 class="text-lg font-semibold mb-1">"Program source"</h2>
-    <textarea
-        class="w-full flex-1 min-h-0 resize-none border border-blue-300 rounded p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-400 outline-none"
+        <div class="flex flex-col min-h-[250px] sm:min-h-[400px] w-full">
+            <h2 class="text-lg font-semibold mb-1">"Program source"</h2>
+            <textarea
+                class="w-full flex-1 min-h-0 resize-none border border-blue-300 rounded p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-400 outline-none"
                 autocapitalize="off"
                 // flex-1 und min-h-0 sind hier ESSENZIELL, damit die Textarea
                 // innerhalb der 200px scrollt, statt das Div zu dehnen
@@ -174,7 +174,10 @@ pub fn ProgramSource(
 pub fn DisplayAST(ast: ReadSignal<String>) -> impl IntoView {
     view! {
         <div class="w-full px-1">
-            <details class="group border border-blue-200 rounded-lg bg-white overflow-hidden shadow-sm" open=false>
+            <details
+                class="group border border-blue-200 rounded-lg bg-white overflow-hidden shadow-sm"
+                open=false
+            >
                 <summary class="flex justify-between items-center p-3 cursor-pointer bg-blue-50 list-none font-bold text-sm text-blue-900 uppercase">
                     "Abstract Syntax Tree (AST)"
                     <span class="transition-transform group-open:rotate-180">"▼"</span>
@@ -251,14 +254,14 @@ pub fn App() -> impl IntoView {
             <ProgramSource active_program set_active_program />
             <ButtonRun active_program set_output set_ast />
 
-                <ProgramOutput output />
-                <DisplayAST ast />
-         <div class="flex flex-row">
+            <ProgramOutput output />
+            <DisplayAST ast />
+            <div class="flex flex-row">
                 <Hint hint=format!(
-                "Cu rrently a maximum of {MAX_EXE_LINES} are executed to prevent freezing the browser in these cases.",
-            ) />
+                    "Cu rrently a maximum of {MAX_EXE_LINES} are executed to prevent freezing the browser in these cases.",
+                ) />
             </div>
-        
+
         </div>
     }
 }
