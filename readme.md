@@ -1,10 +1,10 @@
 # Nanobasic Interpreter in Rust
+Inspired by the Book "Computer Science From Scratch" by David Kopec, see below.
+
 This Project is an implementation of the Nanobasic Interpreter in the programming language Rust.
 Nanobasic is very simple dialect of BASIC based on [Tiny BASIC](https://en.wikipedia.org/wiki/Tiny_BASIC).
 
-Why? - because it was fun and a nice way of learning the Rust plus some computer science :)
-
-BASIC was also the first programming i learned way back on the Commodore C64
+Why? - because it was fun and a nice way of learning the Rust plus some computer science. BASIC was also the first programming language I learned way back on the Commodore C64. This is how it looked in those days 😀
 
 ![BASIC C64](doc/BASIC_Prompt.gif)
 
