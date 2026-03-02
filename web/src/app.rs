@@ -43,7 +43,7 @@ fn run_nano(source: &str) -> Result<(String, String)> {
     let mut count_lines = 0usize;
 
     while !interpreter.finished() & (count_lines < MAX_EXE_LINES) {
-        interpreter.step_line( &mut stream)?;
+        interpreter.step_line(&mut stream)?;
         count_lines += 1;
     }
     let ast = interpreter.ast_json_pretty()?;
