@@ -15,7 +15,7 @@ The picture is from [here](https://www.c64-wiki.de/wiki/BASIC)
 
 [NanoBasic on Github Pages](https://loscommodore.github.io/NanoBasicRust/)
 
-On this website you can test and run the interpreter in the browser. you can load from a list of demo programs or enter your own program.
+On this website you can test and run the interpreter in the browser. you can choose from a list of demo programs or enter your own program.
 
 The website is also written in Rust using the framework [Leptos](https://leptos.dev/). The deployement of the static website on Github Pages is done via Github Actions. The Interpreter is running as a Webassembly-Module (WASM) in the browser.
 
