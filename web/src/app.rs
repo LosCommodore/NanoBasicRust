@@ -3,10 +3,6 @@ use leptos::prelude::*;
 use nanobasic::interpreter::Interpreter;
 use std::rc::Rc;
 
-// include every BASIC file in the top‑level Examples directory; the
-// tuple elements are (display name, source code).  When you add/remove files
-// here, update the list accordingly (a build script could generate this, but
-// for simplicity we write them out).
 const PROGRAMS: &[(&str, &str)] = &[
     (
         "Factorial",
@@ -41,14 +37,13 @@ const PROGRAMS: &[(&str, &str)] = &[
 
 const MAX_EXE_LINES: usize = 10000;
 
-/// run the interpreter on a blob of source text and return the output
 fn run_nano(source: &str) -> Result<(String, String)> {
     let mut stream = Vec::<u8>::new();
-    let mut interpreter = Interpreter::from_str(source, &mut stream)?;
+    let mut interpreter = Interpreter::from_str(source)?;
     let mut count_lines = 0usize;
 
     while !interpreter.finished() & (count_lines < MAX_EXE_LINES) {
-        interpreter.step_line()?;
+        interpreter.step_line( &mut stream)?;
         count_lines += 1;
     }
     let ast = interpreter.ast_json_pretty()?;
@@ -158,8 +153,6 @@ pub fn ProgramSource(
             <textarea
                 class="w-full flex-1 min-h-0 resize-none border border-blue-300 rounded p-3 text-sm sm:text-base focus:ring-2 focus:ring-blue-400 outline-none"
                 autocapitalize="off"
-                // flex-1 und min-h-0 sind hier ESSENZIELL, damit die Textarea
-                // innerhalb der 200px scrollt, statt das Div zu dehnen
                 prop:value=active_program
                 on:input=move |ev| {
                     let val = event_target_value(&ev);

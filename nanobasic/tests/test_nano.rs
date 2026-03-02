@@ -63,8 +63,8 @@ pub fn test_interpret_all_examples() {
         println!("---- Executing: {path:#?}");
         let lines = parser::parse_file(&path).unwrap();
         let mut stdout = std::io::stdout();
-        let mut nano_interpreter = Interpreter::from_ast(lines, &mut stdout);
-        nano_interpreter.run().unwrap();
+        let mut nano_interpreter = Interpreter::from_ast(lines);
+        nano_interpreter.run(&mut stdout).unwrap();
         println!("✅ -------------------------------------------------------------");
         println!("")
     }
@@ -79,10 +79,10 @@ pub fn test_error_on_finished() -> Result<()> {
     "#;
 
     let mut stdout = std::io::stdout();
-    let mut interpreter = Interpreter::from_str(program, &mut stdout)?;
+    let mut interpreter = Interpreter::from_str(program)?;
 
     for _ in 1..10 {
-        if let Err(InterpreterError::Finished) = interpreter.step_line() {
+        if let Err(InterpreterError::Finished) = interpreter.step_line(&mut stdout) {
             if interpreter.current_line() != 30 {
                 bail!("Wrong line number!")
             }
@@ -100,10 +100,10 @@ pub fn test_step_line() -> Result<()> {
     "#;
 
     let mut stdout = std::io::stdout();
-    let mut interpreter = Interpreter::from_str(program, &mut stdout)?;
+    let mut interpreter = Interpreter::from_str(program)?;
 
     while !interpreter.finished() {
-        interpreter.step_line()?
+        interpreter.step_line(&mut stdout)?
     }
     if interpreter.current_line() != 30 {
         bail!("wrong line number");

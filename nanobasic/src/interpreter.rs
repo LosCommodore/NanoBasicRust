@@ -40,18 +40,17 @@ pub enum InterpreterError {
 
 pub type Result<T> = std::result::Result<T, InterpreterError>;
 
-pub struct Interpreter<'a> {
+pub struct Interpreter {
     program: Vec<Line>,
     variables: HashMap<String, isize>,
     statement_index: usize,
     subroutine_stack: Vec<usize>,
-    output: &'a mut dyn Write,
     current_line: usize,
 }
 
-impl<'a> Interpreter<'a> {
+impl Interpreter {
     /// Create interpreter form AST = "Abstact Syntax Tree"
-    pub fn from_str(program: impl AsRef<str>, output: &'a mut dyn Write) -> Result<Self> {
+    pub fn from_str(program: impl AsRef<str>) -> Result<Self> {
         let lines = program
             .as_ref()
             .lines()
@@ -66,19 +65,17 @@ impl<'a> Interpreter<'a> {
             variables: HashMap::new(),
             statement_index: 0,
             subroutine_stack: Vec::new(),
-            output,
             current_line: 0,
         };
         Ok(self_)
     }
 
-    pub fn from_ast(program: Vec<Line>, output: &'a mut dyn Write) -> Self {
+    pub fn from_ast(program: Vec<Line>) -> Self {
         Interpreter {
             program,
             variables: HashMap::new(),
             statement_index: 0,
             subroutine_stack: Vec::new(),
-            output,
             current_line: 0,
         }
     }
@@ -129,7 +126,8 @@ impl<'a> Interpreter<'a> {
         Ok(value)
     }
 
-    fn interpret_statement(&mut self, statement: &Statement) -> Result<()> {
+    fn interpret_statement(&mut self, statement: &Statement, output: &mut dyn Write,
+) -> Result<()> {
         match statement {
             Statement::Let(let_stmt) => {
                 let LetStatement { name, expression } = &**let_stmt;
@@ -163,21 +161,21 @@ impl<'a> Interpreter<'a> {
             }
             Statement::Print(node_printable) => {
                 let printables = &**node_printable;
-                let mut output = Vec::new();
+                let mut out_text = Vec::new();
                 for Node { content, .. } in printables {
                     match content {
                         Printable::String(s) => {
-                            output.push(s.clone());
+                            out_text.push(s.clone());
                         }
                         Printable::ExpressionNode(expression) => {
                             let v: isize = self.calculate_expression(expression)?;
-                            output.push(v.to_string());
+                            out_text.push(v.to_string());
                         }
                     }
                 }
-                let out_str = output.join("\t");
-                writeln!(self.output, "{out_str}")?;
-                self.output.flush()?;
+                let out_str = out_text.join("\t");
+                writeln!(output, "{out_str}")?;
+                output.flush()?;
                 self.statement_index += 1;
             }
             Statement::If(if_statement) => {
@@ -187,7 +185,7 @@ impl<'a> Interpreter<'a> {
                 } = &**if_statement;
                 let condition = self.calculate_boolean_expression(&boolean_expr.content)?;
                 if condition == true {
-                    self.interpret_statement(&then_statement.content)?;
+                    self.interpret_statement(&then_statement.content, output)?;
                 } else {
                     self.statement_index += 1;
                 }
@@ -210,7 +208,8 @@ impl<'a> Interpreter<'a> {
     }
 
     // Executes a signle line of the program
-    pub fn step_line(&mut self) -> Result<()> {
+    pub fn step_line(&mut self, output: &mut dyn Write,
+) -> Result<()> {
         if self.finished() {
             return Err(InterpreterError::Finished);
         };
@@ -220,12 +219,13 @@ impl<'a> Interpreter<'a> {
         self.current_line = *line_id;
 
         let content = &statement.clone().content;
-        self.interpret_statement(content)
+        self.interpret_statement(content, output)
     }
 
-    pub fn run(&mut self) -> Result<()> {
+    pub fn run(&mut self,  output: &mut dyn Write,
+) -> Result<()> {
         while !self.finished() {
-            self.step_line()?
+            self.step_line(output)?
         }
         Ok(())
     }
