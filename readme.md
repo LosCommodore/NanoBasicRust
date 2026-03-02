@@ -23,14 +23,14 @@ The website is also written in Rust using the framework [Leptos](https://leptos.
 
 https://davekopec.com/
 
-[Book](https://nostarch.com/computer-science-from-scratch)
-
-[Github](https://github.com/davecom/ComputerScienceFromScratch)
+You can find out more about the book here: https://computersciencefromscratch.com/
 
 ```
 The book, intended for intermediate to advanced Python programmers, features 7 projects of varying complexity from the realm of interpreters, emulators, computer art, and simple machine learning.
 ```
 **In Chapter 2**, the Nanobasic Interpreter is created in Python as an example of how interpreters work. In order to learn activly I took this code as a blueprint, translated it to Rust and adapted it to my usecase.
+
+[Github Repository of the book](https://github.com/davecom/ComputerScienceFromScratch)
 
 ### Podcast Epidose
 I learned about this book in this podcast episode from "Talk Python To Me":
